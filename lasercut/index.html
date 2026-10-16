@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apogee Components - Laser Cut Settings & Specifications</title>
+    <link rel="icon" type="image/svg+xml" href="https://apogeerockets.com/favicon.ico">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        apogeeBlue: '#005596',
+                        apogeeBlueDark: '#003d6d',
+                        apogeeBlueLight: '#1d74b9',
+                        apogeeRed: '#c8102e',
+                        apogeeRedDark: '#990011',
+                        apogeeYellow: '#ffcc00',
+                        apogeeGrayBg: '#f4f6f8',
+                        apogeePanelBg: '#ffffff',
+                        apogeeBorder: '#d1d5db',
+                        apogeeHeaderBg: '#1e293b',
+                        apogeeRowHover: '#f0f7ff',
+                        apogeeSuccess: '#15803d'
+                    },
+                    fontFamily: {
+                        sans: ['Arial', 'Helvetica', 'sans-serif'],
+                        heading: ['Trebuchet MS', 'Arial', 'sans-serif'],
+                        mono: ['Courier New', 'Courier', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Tone.js for audio synthesis feedback -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f4f6f8;
+            color: #1f2937;
+        }
+
+        /* Header gradient imitating classic e-commerce banner */
+        .apogee-header {
+            background: linear-gradient(180deg, #005596 0%, #003d6d 100%);
+            border-bottom: 4px solid #c8102e;
+        }
+
+        .apogee-card {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .apogee-card-header {
+            background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+            border-bottom: 1px solid #cbd5e1;
+            color: #0f172a;
+            font-family: 'Trebuchet MS', Arial, sans-serif;
+            font-weight: bold;
+        }
+
+        .btn-apogee-primary {
+            background: linear-gradient(180deg, #005596 0%, #003d6d 100%);
+            color: white;
+            border: 1px solid #002b4d;
+        }
+        .btn-apogee-primary:hover {
+            background: linear-gradient(180deg, #1d74b9 0%, #005596 100%);
+        }
+
+        .btn-apogee-red {
+            background: linear-gradient(180deg, #c8102e 0%, #990011 100%);
+            color: white;
+            border: 1px solid #77000d;
+        }
+        .btn-apogee-red:hover {
+            background: linear-gradient(180deg, #e01e37 0%, #c8102e 100%);
+        }
+
+        .btn-apogee-secondary {
+            background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
+            color: #334155;
+            border: 1px solid #cbd5e1;
+        }
+        .btn-apogee-secondary:hover {
+            background: linear-gradient(180deg, #f1f5f9 0%, #cbd5e1 100%);
+        }
+
+        .cut-card {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.15s ease;
+        }
+        .cut-card:hover {
+            border-color: #005596;
+            box-shadow: 0 4px 12px rgba(0, 85, 150, 0.15);
+        }
+
+        /* Custom input styling */
+        input[type="text"] {
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #005596;
+            box-shadow: 0 0 0 2px rgba(0, 85, 150, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between select-none">
+
+    <!-- APOGEE BRANDED HEADER BAR -->
+    <header class="apogee-header text-white py-4 px-4 md:px-8 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-laser-pointer text-apogeeYellow text-3xl"></i>
+                <div>
+                    <h1 class="font-heading text-2xl font-bold tracking-wider text-white uppercase leading-none">
+                        Apogee Components
+                    </h1>
+                    <p class="text-xs text-blue-200 tracking-wide uppercase font-semibold mt-1">
+                        Laser Cutter Parameters & Specification Archive
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 text-xs font-mono bg-black/20 px-3 py-1.5 rounded border border-white/10">
+                <i class="fa-solid fa-clock text-apogeeYellow"></i>
+                <span id="sys-clock">00:00:00</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="w-full max-w-7xl mx-auto px-4 md:px-8 py-6 flex-grow">
+        
+        <!-- SEARCH & TELEMETRY HEADER BAR -->
+        <div class="w-full mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="apogee-card p-3.5 md:col-span-2 flex items-center gap-3">
+                <div class="text-apogeeBlue pl-1 text-lg">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    oninput="handleSearch(this.value)" 
+                    placeholder="Search materials, part numbers (e.g., '14110', 'Plywood', 'Balsa', 'AC-24', 'Acrylic')..." 
+                    class="w-full bg-white text-slate-800 font-sans text-xs placeholder-slate-400 focus:outline-none"
+                />
+                <button onclick="clearSearch()" class="btn-apogee-secondary px-3 py-1 text-xs font-bold rounded">
+                    Clear
+                </button>
+            </div>
+
+            <div class="apogee-card p-3.5 flex items-center justify-between">
+                <span id="searchStatus" class="font-heading font-bold text-xs text-apogeeBlue uppercase">// SHOWING 44 SPECS</span>
+                <span class="text-xs text-slate-500 font-mono font-bold">DATABASE v4.0</span>
+            </div>
+        </div>
+
+        <!-- CATEGORY FILTER PILLS -->
+        <div class="w-full flex items-center gap-2 overflow-x-auto pb-4 mb-4">
+            <button onclick="setCategory('ALL')" id="cat-ALL" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-primary shadow">ALL</button>
+            <button onclick="setCategory('PLYWOOD')" id="cat-PLYWOOD" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">PLYWOOD</button>
+            <button onclick="setCategory('BALSA')" id="cat-BALSA" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">BALSA</button>
+            <button onclick="setCategory('AT')" id="cat-AT" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">AT TUBES</button>
+            <button onclick="setCategory('AC')" id="cat-AC" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">AC COUPLERS</button>
+            <button onclick="setCategory('VAC-FORM')" id="cat-VAC-FORM" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">VAC-FORM</button>
+            <button onclick="setCategory('BASSWOOD')" id="cat-BASSWOOD" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">BASSWOOD</button>
+            <button onclick="setCategory('CARDBOARD')" id="cat-CARDBOARD" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">CARDBOARD</button>
+            <button onclick="setCategory('ACRYLIC')" id="cat-ACRYLIC" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">ACRYLIC</button>
+            <button onclick="setCategory('FOAM')" id="cat-FOAM" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">FOAM</button>
+        </div>
+
+        <!-- CUT SPECS GRID -->
+        <div id="cutsGrid" class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-12">
+            <!-- Populated via JavaScript -->
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="w-full bg-slate-200 border-t border-slate-300 py-6 text-center space-y-2">
+        <div class="text-[11px] md:text-xs text-slate-600 max-w-4xl mx-auto px-4 leading-relaxed font-sans">
+            If you are an employer, please be advised that pursuant to C.R.S. § 24-34-402.5, private personal data and lawful off-duty activities cannot be leveraged for workplace discrimination, adverse action, or retaliation without immediate legal recourse.
+        </div>
+        <div class="text-xs text-slate-500 font-bold">
+            Apogee Components, Inc. • Copyright © Bashea 2014 - 2027
+        </div>
+    </footer>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toastBanner" class="fixed bottom-5 right-5 z-40 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-slate-900 border border-slate-700 text-white px-4 py-2.5 rounded-lg shadow-2xl flex items-center gap-2.5 text-xs font-sans">
+            <i class="fa-solid fa-circle-check text-green-400 text-sm"></i>
+            <span id="toastMessage">Spec copied to clipboard!</span>
+        </div>
+    </div>
+
+    <!-- SCRIPT LOGIC -->
+    <script>
+        setInterval(() => {
+            const now = new Date();
+            const clockEl = document.getElementById('sys-clock');
+            if(clockEl) clockEl.innerText = now.toTimeString().split(' ')[0];
+        }, 1000);
+
+        let audioEnabled = true;
+        let apogeeSynth = null;
+        function initApogeeSynth() {
+            if (!apogeeSynth) {
+                apogeeSynth = new Tone.Synth({
+                    oscillator: { type: 'triangle' },
+                    envelope: { attack: 0.02, decay: 0.15, sustain: 0, release: 0.1 }
+                }).toDestination();
+            }
+        }
+        function playApogeeNote(note = 'C5') {
+            if (!audioEnabled) return;
+            try {
+                Tone.start();
+                initApogeeSynth();
+                apogeeSynth.triggerAttackRelease(note, '16n');
+            } catch(e) {}
+        }
+
+        const cutsData = [
+            { name: "1/32\" Plywood", pn: "14110", diameter: "N/A", class: "PLYWOOD", cut: { freq: 50, spd: 30, pwr: 32 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 5 }] },
+            { name: "1/16\" Plywood", pn: "14112", diameter: "N/A", class: "PLYWOOD", cut: { freq: 65, spd: 26, pwr: 85 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 26, pwr: 8 }, { type: "Raster", freq: "-", spd: 100, pwr: 40 }] },
+            { name: "1/8\" Plywood", pn: "40210", diameter: "N/A", class: "PLYWOOD", cut: { freq: 35, spd: 20, pwr: 100 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 100, pwr: 30 }, { type: "Raster", freq: "-", spd: 100, pwr: 35 }] },
+            { name: "1/4\" Plywood Single Cut", pn: "40212", diameter: "N/A", class: "PLYWOOD", cut: { freq: 35, spd: "10-11", pwr: 100 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 100, pwr: 15 }, { type: "Raster", freq: 50, spd: 100, pwr: 30 }] },
+            { name: "1/4\" Plywood Dual Cut", pn: "40212", diameter: "N/A", class: "PLYWOOD", cut: { freq: 65, spd: "10-17", pwr: 100 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 100, pwr: 15 }, { type: "Raster", freq: 50, spd: 100, pwr: 30 }] },
+            { name: "1/32\" Balsa", pn: "14105", diameter: "N/A", class: "BALSA", cut: { freq: 50, spd: 45, pwr: 15 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 3 }] },
+            { name: "1/16\" Balsa", pn: "14103", diameter: "N/A", class: "BALSA", cut: [{ type: "Cut (Hardwood)", freq: 50, spd: 45, pwr: 22 }, { type: "Cut (Softwood)", freq: 50, spd: 50, pwr: 16 }], engrave: [{ type: "Engrave / Raster", freq: 50, spd: 26, pwr: 3 }] },
+            { name: "3/32\" Balsa", pn: "14104", diameter: "N/A", class: "BALSA", cut: { freq: 50, spd: 50, pwr: 22 }, engrave: [] },
+            { name: "1/8\" Balsa", pn: "14102 / 14107", diameter: "N/A", class: "BALSA", cut: [{ type: "Cut (Hardwood)", freq: 50, spd: 30, pwr: 45 }, { type: "Cut (Softwood)", freq: 50, spd: 35, pwr: 40 }], engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 3 }, { type: "Raster", freq: "-", spd: 26, pwr: 12 }] },
+            { name: "3/16\" Balsa", pn: "14106", diameter: "N/A", class: "BALSA", cut: { freq: 50, spd: 50, pwr: 80 }, engrave: [{ type: "Engrave / Raster", freq: 0, spd: 0, pwr: 0 }] },
+            { name: "1/4\" Balsa", pn: "14109", diameter: "N/A", class: "BALSA", cut: { freq: 50, spd: 25, pwr: 80 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 26, pwr: 6 }] },
+            { name: "Foam Board / Foam Core", pn: "N/A", diameter: "N/A", class: "FOAM", cut: { freq: "-", spd: 100, pwr: 25 }, engrave: [{ type: "Engrave / Raster", freq: "-", spd: 12, pwr: 5 }] },
+            { name: "AT-13/18\"", pn: "10062", diameter: "OD: 0.544\" | ID (AC-13): 0.518\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 5 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 100, pwr: 2 }] },
+            { name: "AT-18/18\"", pn: "10085", diameter: "OD: 0.736\" | ID (AC-18): 0.710\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 5 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 2 }] },
+            { name: "AT-24/18\"", pn: "10089", diameter: "OD: 0.976\" | ID (AC-24): 0.950\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 7 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 1 }] },
+            { name: "AT-24/6\" Clear", pn: "10101", diameter: "OD: 0.976\" | ID (AC-24): 0.950\"", class: "AT", cut: { freq: "-", spd: 37, pwr: 15 }, engrave: [] },
+            { name: "AT-29/13\"", pn: "10110", diameter: "OD: 1.176\" | ID (AC-29): 1.140\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 7 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 1 }] },
+            { name: "AT-29/7\" Thick Wall", pn: "10250", diameter: "OD: 1.176\" | ID (AC-29): 1.140\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 10 }, engrave: [] },
+            { name: "AT-33/18\"", pn: "10130", diameter: "OD: 1.325\" | ID (AC-33): 1.283\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 6 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 1 }] },
+            { name: "AT-41.6/18\"", pn: "10140", diameter: "OD: 1.637\" | ID (AC-41.6): 1.595\"", class: "AT", cut: { freq: 50, spd: 45, pwr: 10 }, engrave: [] },
+            { name: "AT-56/18", pn: "10160", diameter: "OD: 2.217\" | ID (AC-56): 2.180\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 9 }, engrave: [] },
+            { name: "AT-66/18\"", pn: "10197", diameter: "OD: 2.600\" | ID (AC-66): 2.558\"", class: "AT", cut: { freq: 50, spd: 60, pwr: 12 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 60, pwr: 3 }] },
+            { name: "AT-74/18\"", pn: "10201", diameter: "OD: 2.990\" | ID (AC-74): 2.945\"", class: "AT", cut: { freq: 50, spd: 70, pwr: 30 }, engrave: [] },
+            { name: "AT-98/18\" (4\")", pn: "10218", diameter: "OD: 3.990\" | ID (AC-98): N/A", class: "AT", cut: { freq: 50, spd: 40, pwr: 20 }, engrave: [] },
+            { name: "AC-13 Coupler", pn: "13012", diameter: "ID: 0.518\" | OD: 0.544\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 5 }, engrave: [] },
+            { name: "AC-18 Coupler", pn: "13013", diameter: "ID: 0.710\" | OD: 0.736\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 9 }, engrave: [] },
+            { name: "AC-24 Coupler", pn: "13007", diameter: "ID: 0.950\" | OD: 0.976\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 7 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 2 }] },
+            { name: "AC-33 Coupler", pn: "13016", diameter: "ID: 1.283\" | OD: 1.325\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 7 }, engrave: [] },
+            { name: "AC-41.6 / BT-60 Coupler", pn: "13018", diameter: "ID: 1.595\" | OD: 1.637\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 7 }, engrave: [] },
+            { name: "AC-56 / BT-70 Coupler", pn: "13042", diameter: "ID: 2.180\" | OD: 2.217\"", class: "AC", cut: { freq: 50, spd: 45, pwr: 12 }, engrave: [] },
+            { name: "AC-66 / BT-80 Coupler", pn: "13044", diameter: "ID: 2.558\" | OD: 2.600\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 12 }, engrave: [] },
+            { name: "AC-74 / 3\" Coupler", pn: "13046", diameter: "ID: 2.945\" | OD: 2.990\"", class: "AC", cut: { freq: 50, spd: 50, pwr: 24 }, engrave: [{ type: "Engrave / Raster", freq: "-", spd: 60, pwr: 3 }] },
+            { name: "Vac-Form .01", pn: "30001", diameter: "N/A", class: "VAC-FORM", cut: { freq: 50, spd: 60, pwr: 5 }, engrave: [] },
+            { name: "Vac-Form .02", pn: "30002", diameter: "N/A", class: "VAC-FORM", cut: { freq: 50, spd: 37, pwr: 3 }, engrave: [] },
+            { name: "Vac-Form .03", pn: "30003", diameter: "N/A", class: "VAC-FORM", cut: { freq: 50, spd: 100, pwr: 7 }, engrave: [] },
+            { name: "Vac-Form .03 Clear", pn: "13007", diameter: "N/A", class: "VAC-FORM", cut: { freq: 50, spd: 90, pwr: 10 }, engrave: [] },
+            { name: "Vac-Form .06", pn: "13016", diameter: "N/A", class: "VAC-FORM", cut: { freq: 50, spd: 90, pwr: 18 }, engrave: [] },
+            { name: "Acrylic", pn: "40218", diameter: "N/A", class: "ACRYLIC", cut: { freq: 50, spd: 10, pwr: 60 }, engrave: [] },
+            { name: "Cardstock", pn: "44000 / 44001", diameter: "OD: 0.976\" | ID: 0.950\"", class: "CARDBOARD", cut: { freq: 40, spd: 30, pwr: 40 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 40, pwr: 8 }] },
+            { name: "Basswood 3/32\"", pn: "14123", diameter: "N/A", class: "BASSWOOD", cut: { freq: 50, spd: 30, pwr: 85 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 40, pwr: 5 }] },
+            { name: "Basswood 1/8\"", pn: "14121", diameter: "N/A", class: "BASSWOOD", cut: { freq: 50, spd: 25, pwr: 85 }, engrave: [] },
+            { name: "Corrugated Cardboard", pn: "44007", diameter: "N/A", class: "CARDBOARD", cut: { freq: 50, spd: 35, pwr: 50 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 50, pwr: 8 }] },
+            { name: "10.5mm Tube", pn: "N/A", diameter: "OD: 0.466\" | ID: 0.422\"", class: "AT", cut: null, engrave: [], note: "SETTINGS NOT SPECIFIED" },
+            { name: "98mm / 4\" Tube", pn: "N/A", diameter: "OD: 3.990\" | ID: N/A", class: "AT", cut: { freq: 50, spd: 40, pwr: 20 }, engrave: [] }
+        ];
+
+        let state = {
+            searchQuery: '',
+            category: 'ALL'
+        };
+
+        function renderCuts() {
+            const container = document.getElementById('cutsGrid');
+            const query = (state.searchQuery || '').toLowerCase().trim();
+
+            const filtered = cutsData.filter(item => {
+                if (state.category !== 'ALL' && item.class !== state.category) return false;
+                if (!query) return true;
+                const matchString = (item.name + ' ' + item.pn + ' ' + item.diameter + ' ' + item.class).toLowerCase();
+                return matchString.includes(query);
+            });
+
+            document.getElementById('searchStatus').textContent = `// SHOWING ${filtered.length} OF ${cutsData.length} CUT SPECS`;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="col-span-full py-12 text-center font-sans text-slate-400 italic">No matching laser cut parameters found.</div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map((item, idx) => {
+                let cutHtml = '';
+                if (item.note) {
+                    cutHtml = `<div class="text-xs text-amber-600 font-mono italic">${item.note}</div>`;
+                } else if (Array.isArray(item.cut)) {
+                    cutHtml = item.cut.map(c => `
+                        <div class="grid grid-cols-3 gap-2 text-xs font-mono bg-slate-50 p-2 rounded border border-slate-200 mb-1.5">
+                            <div class="text-slate-700 font-bold col-span-full">${c.type}</div>
+                            <div><span class="text-slate-400">FREQ:</span> <strong class="text-slate-800">${c.freq}</strong></div>
+                            <div><span class="text-slate-400">SPD:</span> <strong class="text-slate-800">${c.spd}</strong></div>
+                            <div><span class="text-slate-400">PWR:</span> <strong class="text-apogeeRed">${c.pwr}</strong></div>
+                        </div>
+                    `).join('');
+                } else if (item.cut) {
+                    cutHtml = `
+                        <div class="grid grid-cols-3 gap-2 text-xs font-mono bg-slate-50 p-2 rounded border border-slate-200">
+                            <div><span class="text-slate-400">FREQ:</span> <strong class="text-slate-800">${item.cut.freq}</strong></div>
+                            <div><span class="text-slate-400">SPD:</span> <strong class="text-slate-800">${item.cut.spd}</strong></div>
+                            <div><span class="text-slate-400">PWR:</span> <strong class="text-apogeeRed">${item.cut.pwr}</strong></div>
+                        </div>
+                    `;
+                }
+
+                let engraveHtml = '';
+                if (item.engrave && item.engrave.length > 0) {
+                    engraveHtml = item.engrave.map(e => `
+                        <div class="grid grid-cols-3 gap-2 text-xs font-mono bg-slate-50 p-2 rounded border border-slate-200 mt-1.5">
+                            <div class="text-slate-600 col-span-full font-bold">${e.type}</div>
+                            <div><span class="text-slate-400">FREQ:</span> <strong class="text-slate-800">${e.freq}</strong></div>
+                            <div><span class="text-slate-400">SPD:</span> <strong class="text-slate-800">${e.spd}</strong></div>
+                            <div><span class="text-slate-400">PWR:</span> <strong class="text-apogeeBlue">${e.pwr}</strong></div>
+                        </div>
+                    `).join('');
+                }
+
+                return `
+                    <div class="cut-card rounded-lg p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-start justify-between gap-2 mb-2">
+                                <div>
+                                    <div class="text-[10px] font-heading uppercase tracking-wider text-apogeeBlue font-bold">${item.class}</div>
+                                    <h3 class="font-bold text-slate-800 text-sm font-heading">${item.name}</h3>
+                                </div>
+                                <span class="text-xs font-mono px-2 py-0.5 bg-slate-100 border border-slate-300 text-slate-700 rounded font-bold">P/N: ${item.pn}</span>
+                            </div>
+                            <div class="text-xs text-slate-500 font-mono mb-3 pb-2 border-b border-slate-200">
+                                <div>DIAMETER: <span class="text-slate-700 font-bold">${item.diameter}</span></div>
+                            </div>
+
+                            <div class="space-y-2 mb-4">
+                                <div class="text-[10px] font-heading font-bold text-slate-400 uppercase tracking-wider">CUT PARAMETERS</div>
+                                ${cutHtml}
+                                ${engraveHtml ? '<div class="text-[10px] font-heading font-bold text-slate-400 uppercase tracking-wider mt-3">ENGRAVE / RASTER</div>' + engraveHtml : ''}
+                            </div>
+                        </div>
+
+                        <button onclick="copyHudSpec(${idx})" class="btn-apogee-secondary w-full py-2 text-xs font-bold rounded flex items-center justify-center gap-2 transition active:scale-95">
+                            <i class="fa-solid fa-copy text-apogeeBlue"></i>
+                            <span>Copy Spec</span>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function handleSearch(val) {
+            state.searchQuery = val;
+            renderCuts();
+        }
+
+        function clearSearch() {
+            state.searchQuery = '';
+            document.getElementById('searchInput').value = '';
+            renderCuts();
+        }
+
+        function setCategory(cat) {
+            state.category = cat;
+            ['ALL', 'PLYWOOD', 'BALSA', 'AT', 'AC', 'VAC-FORM', 'BASSWOOD', 'CARDBOARD', 'ACRYLIC', 'FOAM'].forEach(c => {
+                const btn = document.getElementById(`cat-${c}`);
+                if(btn) {
+                    if(c === cat) {
+                        btn.className = 'px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-primary shadow';
+                    } else {
+                        btn.className = 'px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary';
+                    }
+                }
+            });
+            renderCuts();
+            playApogeeNote('E5');
+        }
+
+        function copyHudSpec(idx) {
+            const item = cutsData.filter(i => {
+                if (state.category !== 'ALL' && i.class !== state.category) return false;
+                const query = (state.searchQuery || '').toLowerCase().trim();
+                if (!query) return true;
+                return (i.name + ' ' + i.pn + ' ' + i.diameter + ' ' + i.class).toLowerCase().includes(query);
+            })[idx];
+
+            if (!item) return;
+
+            let text = `${item.name}\nP/N: ${item.pn}\nDIAMETER: ${item.diameter}\nCLASS: ${item.class}\n`;
+            if (item.cut) {
+                if (Array.isArray(item.cut)) {
+                    item.cut.forEach(c => text += `${c.type}: FREQ: ${c.freq} | SPD: ${c.spd} | PWR: ${c.pwr}\n`);
+                } else {
+                    text += `Cut: FREQ: ${item.cut.freq} | SPD: ${item.cut.spd} | PWR: ${item.cut.pwr}\n`;
+                }
+            }
+            if (item.engrave && item.engrave.length > 0) {
+                item.engrave.forEach(e => text += `${e.type}: FREQ: ${e.freq} | SPD: ${e.spd} | PWR: ${e.pwr}\n`);
+            }
+
+            // Fallback clipboard method for iframe environments
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast(`Copied spec for ${item.name}!`);
+                playApogeeNote('G5');
+            } catch (err) {
+                showToast(`Failed to copy spec.`);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        let toastTimer = null;
+        function showToast(msg) {
+            const banner = document.getElementById('toastBanner');
+            document.getElementById('toastMessage').textContent = msg;
+            banner.classList.remove('translate-y-20', 'opacity-0');
+            banner.classList.add('translate-y-0', 'opacity-100');
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                banner.classList.add('translate-y-20', 'opacity-0');
+                banner.classList.remove('translate-y-0', 'opacity-100');
+            }, 2600);
+        }
+
+        window.onload = function () {
+            renderCuts();
+        };
+    </script>
+</body>
+</html>
