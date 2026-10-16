@@ -21,7 +21,7 @@
                         apogeeYellow: '#ffcc00',
                         apogeeGrayBg: '#f4f6f8',
                         apogeePanelBg: '#ffffff',
-                        apogeeBorder: '#d1d5db',
+                        apogeeBorder: '#cbd5e1',
                         apogeeHeaderBg: '#1e293b',
                         apogeeRowHover: '#f0f7ff',
                         apogeeSuccess: '#15803d'
@@ -150,10 +150,30 @@
 
     <!-- MAIN CONTAINER -->
     <main class="w-full max-w-7xl mx-auto px-4 md:px-8 py-6 flex-grow">
-        
+
+        <!-- HOW TO USE DROPDOWN -->
+        <div class="w-full mb-6">
+            <details class="apogee-card group">
+                <summary class="apogee-card-header p-3.5 flex items-center justify-between cursor-pointer text-xs uppercase font-bold text-apogeeBlue hover:text-apogeeBlueDark transition select-none">
+                    <span class="flex items-center gap-2">
+                        <i class="fa-solid fa-circle-question text-apogeeBlue text-base"></i>
+                        <span>How to Use / Copy Data Instructions</span>
+                    </span>
+                    <i class="fa-solid fa-chevron-down transform group-open:rotate-180 transition-transform duration-200 text-slate-500"></i>
+                </summary>
+                <div class="p-4 border-t border-slate-200 bg-slate-50 flex flex-col items-center">
+                    <p class="text-xs text-slate-600 mb-3 font-sans max-w-2xl text-center">
+                        Select and copy rows directly from your MasterWorks / Priority Build Report table, then paste into the box below and click <strong>Parse & Load Data</strong>.
+                    </p>
+                    <div class="rounded overflow-hidden border border-slate-300 shadow-md max-w-4xl w-full">
+                        <img src="https://raw.githubusercontent.com/warehouse-sketch/production/main/webfiles/howtouse.gif" alt="How to copy and paste priority queue data" class="w-full h-auto block" />
+                    </div>
+                </div>
+            </details>
+        </div>
+
         <!-- CONTROL BAR: DATE & ACTIONS -->
         <div class="w-full mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            
             <!-- Schedule Date -->
             <div class="apogee-card p-3.5 flex items-center justify-between">
                 <div class="text-xs font-bold font-heading text-slate-700 uppercase">
@@ -190,7 +210,6 @@
 
         <!-- INPUT SECTION: BULK PASTE & MANUAL ENTRY -->
         <div class="w-full mb-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
-            
             <!-- Bulk Paste Box (2 cols) -->
             <div class="apogee-card p-4 space-y-3 lg:col-span-2 flex flex-col justify-between">
                 <div>
@@ -269,7 +288,6 @@
                 </div>
             </div>
         </div>
-
     </main>
 
     <!-- FOOTER -->
@@ -417,7 +435,8 @@
             const max = document.getElementById('manualMax').value.trim() || '0';
             const desc = document.getElementById('manualDesc').value.trim() || 'Manual Entry Item';
 
-            if (!code) {                showToast('Please enter at least a Parent Code.');
+            if (!code) {
+                showToast('Please enter at least a Parent Code.');
                 return;
             }
 
