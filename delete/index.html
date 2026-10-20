@@ -52,7 +52,6 @@
                 linear-gradient(90deg, rgba(255, 30, 86, 0.015) 1px, transparent 1px);
             background-size: 100% 100%, 24px 24px, 24px 24px;
         }
-
         .scanlines {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -63,13 +62,11 @@
             opacity: 0.75;
             animation: crtFlicker 0.15s infinite;
         }
-
         @keyframes crtFlicker {
             0% { opacity: 0.72; }
             50% { opacity: 0.82; }
             100% { opacity: 0.75; }
         }
-
         .retro-box {
             background: linear-gradient(135deg, rgba(16, 9, 22, 0.95) 0%, rgba(6, 3, 10, 0.98) 100%);
             border: 2px solid #3d122b;
@@ -86,14 +83,12 @@
             );
             position: relative;
         }
-
         .glow-blood {
             text-shadow: 0 0 12px rgba(255, 30, 86, 0.8);
         }
         .glow-lich {
             text-shadow: 0 0 12px rgba(57, 255, 20, 0.7);
         }
-
         .priority-row {
             background: linear-gradient(180deg, #191922 0%, #121217 100%);
             border: 1px solid #3d122b;
@@ -115,9 +110,7 @@
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-8 select-none">
-
     <div class="scanlines"></div>
-
     <div class="w-full max-w-6xl mx-auto flex flex-col items-center flex-grow">
         <!-- LOGO BOX -->
         <div class="retro-box px-16 py-4 mb-4 tracking-[0.3em] font-bold text-xl text-white flex items-center space-x-3">
@@ -147,7 +140,10 @@
             </div>
 
             <!-- Clear & Export Actions -->
-            <div class="retro-box p-3.5 flex items-center justify-end gap-2">
+            <div class="retro-box p-3.5 flex items-center justify-end gap-2 flex-wrap">
+                <button onclick="copyForGoogleSheets()" class="px-3 py-1.5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/50 text-emerald-400 font-mono text-xs font-bold rounded transition active:scale-95 flex items-center gap-1.5 shadow-md" title="Copy queue formatted for Google Sheets">
+                    <i class="fa-regular fa-copy"></i> Copy to Sheets
+                </button>
                 <button onclick="clearAllPriorities()" class="px-3 py-1.5 bg-charcoal hover:bg-red-950/60 border border-red-900/50 rounded text-xs font-mono text-red-400 transition">Clear List</button>
                 <button onclick="exportPriorityList()" class="px-3 py-1.5 bg-charcoal hover:bg-zinc-800 border border-zinc-700 rounded text-xs font-mono text-zinc-200 transition">Export CSV</button>
             </div>
@@ -261,6 +257,7 @@
     <script>
         let audioEnabled = true;
         let spookSynth = null;
+
         function initSpookSynth() {
             if (!spookSynth) {
                 spookSynth = new Tone.Synth({
@@ -269,6 +266,7 @@
                 }).toDestination();
             }
         }
+
         function playSpookyNote(note = 'C4') {
             if (!audioEnabled) return;
             try {
@@ -462,9 +460,9 @@
                 showToast('No items to export.');
                 return;
             }
-            let csv = 'Parent Code,Description,Available,Max,Priority Run Qty,Made Actual,Bad Actual,Status\n';
+            let csv = 'Part Number,Item#,Sheets,Material Used,Kanban Color,Available Stock # in MW,# In Box (before build),Qty Built,# Bad\n';
             priorityState.items.forEach(i => {
-                csv += `"${i.code}","${i.description}","${i.avail}","${i.max}","${i.runQty}","${i.madeActual}","${i.badActual}","${i.completed ? 'Completed' : 'Pending'}"\n`;
+                csv += `"${i.code}","${i.description}","","","","${i.avail}","","${i.madeActual}","${i.badActual}"\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
@@ -476,6 +474,19 @@
             showToast('Priority list exported to CSV.');
         }
 
+        /**
+         * Copy active queue items formatted specifically for Google Sheets.
+         * Target Column Order:
+         * 1. Part Number (= item.code)
+         * 2. Item# (= item.description)
+         * 3. Sheets (= blank)
+         * 4. Material Used (= blank)
+         * 5. Kanban Color (= blank)
+         * 6. Available Stock # in MW (= item.avail)
+         * 7. # In Box (before build) (= blank)
+         * 8. Qty Built (= item.madeActual)
+         * 9. # Bad (= item.badActual)
+         */
         async function copyForGoogleSheets() {
             if (priorityState.items.length === 0) {
                 showToast('No active priority data to copy.');
@@ -483,20 +494,18 @@
             }
 
             const validItems = priorityState.items.filter(item => item.code);
-
             if (validItems.length === 0) {
                 showToast('No valid data found to copy.');
                 return;
             }
 
-            // Build Tab-Delimited Text (Text/Plain payload)
-            // Layout: Part Number | Item (Empty for VLOOKUP) | # Sheets | Material Used | Kanban Color (Empty for VLOOKUP) | Available Stock # in MW | # In Box (before build) | Qty Built | # Bad
+            // Build Tab-Delimited Text (Text/Plain payload for Google Sheets column alignment)
             const textLines = validItems.map(item => {
                 const partNumber = item.code || '';
-                const itemDesc = ''; // Skipped for VLOOKUP
+                const itemDesc = item.description || '';
                 const sheets = '';
                 const materialUsed = '';
-                const kanbanColor = ''; // Skipped for VLOOKUP
+                const kanbanColor = '';
                 const availStockMW = item.avail || '';
                 const inBoxBeforeBuild = '';
                 const qtyBuilt = item.madeActual || '';
@@ -516,19 +525,20 @@
             });
             const plainTextData = textLines.join('\n');
 
-            // Build HTML Table (Text/HTML payload for Google Sheets auto-column recognition)
+            // Build HTML Table (Text/HTML payload for native Google Sheets clipboard parser)
             const htmlTableRows = validItems.map(item => {
                 const partNumber = item.code || '';
+                const itemDesc = item.description || '';
                 const availStockMW = item.avail || '';
                 const qtyBuilt = item.madeActual || '';
                 const qtyBad = item.badActual || '';
 
                 return `<tr>` +
                     `<td>${partNumber}</td>` +
-                    `<td></td>` + // Item description skipped for VLOOKUP
+                    `<td>${itemDesc}</td>` +
                     `<td></td>` +
                     `<td></td>` +
-                    `<td></td>` + // Kanban Color skipped for VLOOKUP
+                    `<td></td>` +
                     `<td>${availStockMW}</td>` +
                     `<td></td>` +
                     `<td>${qtyBuilt}</td>` +
@@ -539,7 +549,6 @@
             const htmlTableData = `<table>${htmlTableRows}</table>`;
 
             try {
-                // Clipboard API with standard fallback
                 if (navigator.clipboard && window.ClipboardItem) {
                     const textBlob = new Blob([plainTextData], { type: 'text/plain' });
                     const htmlBlob = new Blob([htmlTableData], { type: 'text/html' });
@@ -559,7 +568,6 @@
                 playSpookyNote('E5');
                 showToast(`Copied ${validItems.length} item(s) for Google Sheets!`);
             } catch (err) {
-                // Fallback using document.execCommand with copy listener override
                 const listener = function(e) {
                     e.clipboardData.setData('text/plain', plainTextData);
                     e.clipboardData.setData('text/html', htmlTableData);
