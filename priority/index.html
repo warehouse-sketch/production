@@ -78,6 +78,15 @@
             background: linear-gradient(180deg, #1d74b9 0%, #005596 100%);
         }
 
+        .btn-apogee-green {
+            background: linear-gradient(180deg, #16a34a 0%, #15803d 100%);
+            color: white;
+            border: 1px solid #14532d;
+        }
+        .btn-apogee-green:hover {
+            background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+        }
+
         .btn-apogee-red {
             background: linear-gradient(180deg, #c8102e 0%, #990011 100%);
             color: white;
@@ -198,32 +207,35 @@
             </div>
 
             <!-- Clear & Export Actions -->
-            <div class="apogee-card p-3.5 flex items-center justify-end gap-2">
+            <div class="apogee-card p-3.5 flex items-center justify-end gap-2 flex-wrap">
+                <button onclick="copyQueueForGoogleSheets()" class="btn-apogee-green px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5" title="Copy queue formatted for Google Sheets">
+                    <i class="fa-solid fa-copy"></i> Copy to Sheets
+                </button>
                 <button onclick="clearAllPriorities()" class="btn-apogee-red px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5">
                     <i class="fa-solid fa-trash-can"></i> Clear List
                 </button>
                 <button onclick="exportPriorityList()" class="btn-apogee-secondary px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5">
-                    <i class="fa-solid fa-file-csv text-apogeeBlue"></i> Export CSV
+                    <i class="fa-solid fa-file-csv text-apogeeBlue"></i> CSV
                 </button>
             </div>
         </div>
 
-        <!-- INPUT SECTION: BULK PASTE & MANUAL ENTRY -->
-        <div class="w-full mb-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <!-- Bulk Paste Box (2 cols) -->
-            <div class="apogee-card p-4 space-y-3 lg:col-span-2 flex flex-col justify-between">
-                <div>
+        <!-- INPUT SECTION: BULK PASTE & MANUAL ENTRY (SIDE-BY-SIDE 2-COLUMN GRID) -->
+        <div class="w-full mb-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- Bulk Paste Box -->
+            <div class="apogee-card p-4 flex flex-col justify-between">
+                <div class="space-y-2">
                     <div class="flex items-center justify-between text-xs font-heading font-bold mb-2">
                         <span class="text-apogeeBlue uppercase"><i class="fa-solid fa-paste mr-1"></i> Paste Priority Data (Tab-Separated)</span>
                     </div>
                     <textarea 
                         id="pasteInputArea" 
-                        rows="3" 
+                        rows="4" 
                         placeholder="Paste copied Priority Build Report / inventory rows here..."
                         class="w-full bg-slate-50 p-2.5 text-xs font-mono text-slate-800 placeholder-slate-400 resize-y"
                     ></textarea>
                 </div>
-                <div class="flex items-center justify-between pt-1">
+                <div class="flex items-center justify-between pt-3 border-t border-slate-100 mt-3">
                     <div class="text-[11px] text-slate-500 font-sans">
                         Auto-extracts Parent Code, Desc, Avail, Max, Run Qty.
                     </div>
@@ -234,8 +246,8 @@
                 </div>
             </div>
 
-            <!-- Manual Single Item Entry Box (1 col) -->
-            <div class="apogee-card p-4 space-y-2.5 flex flex-col justify-between">
+            <!-- Manual Single Item Entry Box -->
+            <div class="apogee-card p-4 flex flex-col justify-between">
                 <div>
                     <div class="text-xs font-heading font-bold text-apogeeBlue uppercase mb-2">
                         <i class="fa-solid fa-circle-plus mr-1"></i> Manual Item Entry
@@ -248,9 +260,9 @@
                         <input type="text" id="manualAvail" placeholder="Avail" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
                         <input type="text" id="manualMax" placeholder="Max" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
                     </div>
-                    <input type="text" id="manualDesc" placeholder="Description" class="w-full bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                    <input type="text" id="manualDesc" placeholder="Description" class="w-full bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800 mb-2" />
                 </div>
-                <button onclick="handleManualAdd()" class="btn-apogee-secondary w-full py-2 font-bold text-xs rounded transition active:scale-95 flex items-center justify-center gap-1.5">
+                <button onclick="handleManualAdd()" class="btn-apogee-secondary w-full py-2 font-bold text-xs rounded transition active:scale-95 flex items-center justify-center gap-1.5 border-slate-300 mt-2">
                     <i class="fa-solid fa-plus text-apogeeBlue"></i> Add Item to Queue
                 </button>
             </div>
@@ -263,7 +275,12 @@
                     <div class="font-bold uppercase tracking-wider flex items-center gap-2">
                         <i class="fa-solid fa-list-check text-apogeeBlue"></i> Active Priority Queue
                     </div>
-                    <div class="text-slate-500 font-normal" id="queueStatusText">0 items loaded</div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="copyQueueForGoogleSheets()" class="btn-apogee-green px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-copy"></i> Copy Active Queue for Google Sheets
+                        </button>
+                        <div class="text-slate-500 font-normal" id="queueStatusText">0 items loaded</div>
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -511,14 +528,75 @@
             }
         }
 
+        /**
+         * Copy active queue items formatted specifically for Google Sheets.
+         * Google Sheets Column Structure:
+         * 1. Part Number (= code)
+         * 2. Item# (= description)
+         * 3. Sheets (= blank)
+         * 4. Material Used (= blank)
+         * 5. Kanban Color (= blank)
+         * 6. Available Stock # in MW (= avail)
+         * 7. # In Box (before build) (= blank)
+         * 8. Qty Built (= madeActual)
+         * 9. # Bad (= badActual)
+         */
+        function copyQueueForGoogleSheets() {
+            if (priorityState.items.length === 0) {
+                showToast('No items in queue to copy.');
+                return;
+            }
+
+            const formattedRows = priorityState.items.map(item => {
+                const partNumber = item.code || '';
+                const itemDesc = item.description || '';
+                const sheets = '';
+                const materialUsed = '';
+                const kanbanColor = '';
+                const availStock = item.avail || '';
+                const inBoxBeforeBuild = '';
+                const qtyBuilt = item.madeActual || '';
+                const badQty = item.badActual || '';
+
+                return [
+                    partNumber,
+                    itemDesc,
+                    sheets,
+                    materialUsed,
+                    kanbanColor,
+                    availStock,
+                    inBoxBeforeBuild,
+                    qtyBuilt,
+                    badQty
+                ].join('\t');
+            });
+
+            const copyText = formattedRows.join('\n');
+
+            navigator.clipboard.writeText(copyText).then(() => {
+                playApogeeNote('C6');
+                showToast(`Copied ${priorityState.items.length} item(s) formatted for Google Sheets!`);
+            }).catch(err => {
+                // Fallback copying method if Clipboard API is blocked
+                const textArea = document.createElement('textarea');
+                textArea.value = copyText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                playApogeeNote('C6');
+                showToast(`Copied ${priorityState.items.length} item(s) formatted for Google Sheets!`);
+            });
+        }
+
         function exportPriorityList() {
             if (priorityState.items.length === 0) {
                 showToast('No items to export.');
                 return;
             }
-            let csv = 'Parent Code,Description,Available,Max,Priority Run Qty,Made Actual,Bad Actual,Status\n';
+            let csv = 'Part Number,Item#,Sheets,Material Used,Kanban Color,Available Stock # in MW,# In Box (before build),Qty Built,# Bad\n';
             priorityState.items.forEach(i => {
-                csv += `"${i.code}","${i.description}","${i.avail}","${i.max}","${i.runQty}","${i.madeActual}","${i.badActual}","${i.completed ? 'Completed' : 'Pending'}"\n`;
+                csv += `"${i.code}","${i.description}","","","","${i.avail}","","${i.madeActual}","${i.badActual}"\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
