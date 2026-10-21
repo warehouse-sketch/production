@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apogee Components - Production & Laser Cut Hub</title>
+    <title>Apogee Components - Production Hub & Laser Cut Settings</title>
     <link rel="icon" type="image/svg+xml" href="https://apogeerockets.com/favicon.ico">
 
     <!-- Tailwind CSS -->
@@ -36,9 +36,9 @@
         }
     </script>
 
-    <!-- FontAwesome icons -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Tone.js for audio feedback synthesis -->
+    <!-- Tone.js for audio synthesis feedback -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 
     <style>
@@ -48,6 +48,7 @@
             color: #1f2937;
         }
 
+        /* Header gradient imitating classic e-commerce banner */
         .apogee-header {
             background: linear-gradient(180deg, #005596 0%, #003d6d 100%);
             border-bottom: 4px solid #c8102e;
@@ -121,72 +122,53 @@
             color: #64748b;
         }
 
-        input[type="text"], input[type="date"], input[type="number"], select, textarea {
+        .cut-card {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.15s ease;
+        }
+        .cut-card:hover {
+            border-color: #005596;
+            box-shadow: 0 4px 12px rgba(0, 85, 150, 0.15);
+        }
+
+        /* Custom input styling */
+        input[type="text"], input[type="date"], textarea {
             border: 1px solid #cbd5e1;
             border-radius: 4px;
         }
-        input[type="text"]:focus, input[type="date"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+        input[type="text"]:focus, input[type="date"]:focus, textarea:focus {
             outline: none;
             border-color: #005596;
             box-shadow: 0 0 0 2px rgba(0, 85, 150, 0.2);
         }
-
-        .tab-btn {
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s ease;
-        }
-        .tab-btn.active {
-            border-bottom-color: #ffcc00;
-            background-color: rgba(255, 255, 255, 0.15);
-            color: #ffffff;
-            font-weight: bold;
-        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between select-none">
-
-    <!-- APOGEE BRANDED HEADER BAR WITH NAVIGATION -->
-    <header class="apogee-header text-white pt-4 pb-0 px-4 md:px-8 shadow-md sticky top-0 z-30">
-        <div class="max-w-7xl mx-auto">
-            <div class="flex flex-col md:flex-row items-center justify-between gap-3 mb-3">
-                <div class="flex items-center space-x-3">
-                    <i class="fa-solid fa-rocket text-apogeeYellow text-3xl"></i>
-                    <div>
-                        <h1 class="font-heading text-2xl font-bold tracking-wider text-white uppercase leading-none">
-                            Apogee Components
-                        </h1>
-                        <p class="text-xs text-blue-200 tracking-wide uppercase font-semibold mt-1">
-                            Production Priority Tracker & Laser Cut Specifications
-                        </p>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-3">
-                    <button onclick="toggleAudio()" id="audioBtn" class="text-xs font-mono bg-black/20 hover:bg-black/30 px-3 py-1.5 rounded border border-white/20 flex items-center gap-1.5 transition">
-                        <i id="audioIcon" class="fa-solid fa-volume-high text-apogeeYellow"></i>
-                        <span id="audioStatus">AUDIO ON</span>
-                    </button>
-                    <div class="flex items-center space-x-2 text-xs font-mono bg-black/20 px-3 py-1.5 rounded border border-white/10">
-                        <i class="fa-solid fa-cloud text-apogeeYellow"></i>
-                        <span>LOCAL CACHE ACTIVE</span>
-                    </div>
+    <!-- APOGEE BRANDED HEADER BAR -->
+    <header class="apogee-header text-white py-4 px-4 md:px-8 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-rocket text-apogeeYellow text-3xl"></i>
+                <div>
+                    <h1 class="font-heading text-2xl font-bold tracking-wider text-white uppercase leading-none">
+                        Apogee Components
+                    </h1>
+                    <p class="text-xs text-blue-200 tracking-wide uppercase font-semibold mt-1">
+                        Production Priority Queue, Order Tracking & Laser Settings
+                    </p>
                 </div>
             </div>
-
-            <!-- NAVIGATION TABS -->
-            <div class="flex space-x-2 border-t border-white/10 pt-1">
-                <button onclick="switchTab('queue')" id="tab-queue" class="tab-btn active px-4 py-2 text-xs uppercase tracking-wider rounded-t flex items-center gap-2 hover:text-white text-blue-100">
-                    <i class="fa-solid fa-list-check"></i>
-                    <span>Priority Queue</span>
-                </button>
-                <button onclick="switchTab('laser')" id="tab-laser" class="tab-btn px-4 py-2 text-xs uppercase tracking-wider rounded-t flex items-center gap-2 hover:text-white text-blue-100">
-                    <i class="fa-solid fa-bolt"></i>
-                    <span>Laser Cut Database</span>
-                </button>
-                <button onclick="switchTab('split')" id="tab-split" class="tab-btn hidden lg:flex px-4 py-2 text-xs uppercase tracking-wider rounded-t items-center gap-2 hover:text-white text-blue-100">
-                    <i class="fa-solid fa-columns"></i>
-                    <span>Combined Dashboard</span>
-                </button>
+            <div class="flex items-center gap-3">
+                <div class="flex items-center space-x-2 text-xs font-mono bg-black/20 px-3 py-1.5 rounded border border-white/10">
+                    <i class="fa-solid fa-clock text-apogeeYellow"></i>
+                    <span id="sys-clock">00:00:00</span>
+                </div>
+                <div class="flex items-center space-x-2 text-xs font-mono bg-black/20 px-3 py-1.5 rounded border border-white/10">
+                    <i class="fa-solid fa-cloud text-apogeeYellow"></i>
+                    <span>STATUS: CACHED TO BROWSER STORAGE</span>
+                </div>
             </div>
         </div>
     </header>
@@ -194,31 +176,37 @@
     <!-- MAIN CONTAINER -->
     <main class="w-full max-w-7xl mx-auto px-4 md:px-8 py-6 flex-grow">
 
-        <!-- VIEW 1: PRIORITY QUEUE SECTION -->
-        <section id="section-queue" class="space-y-6">
+        <!-- SECTION 1: PRIORITY QUEUE TRACKER -->
+        <div class="mb-12">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b-2 border-apogeeBlue">
+                <h2 class="font-heading text-lg font-bold text-apogeeBlue uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-list-check"></i> Production Priority Queue
+                </h2>
+            </div>
+
             <!-- HOW TO USE DROPDOWN -->
-            <div class="w-full">
+            <div class="w-full mb-6">
                 <details class="apogee-card group">
                     <summary class="apogee-card-header p-3.5 flex items-center justify-between cursor-pointer text-xs uppercase font-bold text-apogeeBlue hover:text-apogeeBlueDark transition select-none">
                         <span class="flex items-center gap-2">
                             <i class="fa-solid fa-circle-question text-apogeeBlue text-base"></i>
-                            <span>How to Use / Priority Report Copying Instructions</span>
+                            <span>How to Use / Copy Data Instructions</span>
                         </span>
                         <i class="fa-solid fa-chevron-down transform group-open:rotate-180 transition-transform duration-200 text-slate-500"></i>
                     </summary>
                     <div class="p-4 border-t border-slate-200 bg-slate-50 flex flex-col items-center">
                         <p class="text-xs text-slate-600 mb-3 font-sans max-w-2xl text-center">
-                            Select and copy rows directly from <code class="bg-slate-200 px-1 py-0.5 rounded font-mono">apogeerockets.com/docs/Priority_Build_Report.html</code> table, then paste into the box below and click <strong>Parse & Load Data</strong>.
+                            Select and copy rows directly from https://apogeerockets.com/docs/Priority_Build_Report.html / Priority Build Report table, then paste into the box below and click <strong>Parse & Load Data</strong>.
                         </p>
-                        <div class="rounded overflow-hidden border border-slate-300 shadow-md max-w-4xl w-full bg-white p-2 text-center">
-                            <img src="https://raw.githubusercontent.com/warehouse-sketch/production/main/webfiles/howtouse.gif" onerror="this.onerror=null; this.src='https://placehold.co/800x250/005596/ffffff?text=Copy+rows+from+Priority+Report+and+paste+into+text+area';" alt="How to copy and paste priority queue data" class="w-full h-auto block rounded" />
+                        <div class="rounded overflow-hidden border border-slate-300 shadow-md max-w-4xl w-full">
+                            <img src="https://raw.githubusercontent.com/warehouse-sketch/production/main/webfiles/howtouse.gif" alt="How to copy and paste priority queue data" class="w-full h-auto block" />
                         </div>
                     </div>
                 </details>
             </div>
 
             <!-- CONTROL BAR: DATE & ACTIONS -->
-            <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="w-full mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <!-- Schedule Date -->
                 <div class="apogee-card p-3.5 flex items-center justify-between">
                     <div class="text-xs font-bold font-heading text-slate-700 uppercase">
@@ -256,8 +244,8 @@
                 </div>
             </div>
 
-            <!-- INPUT SECTION: BULK PASTE & MANUAL ENTRY (SIDE-BY-SIDE GRID) -->
-            <div class="w-full grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- INPUT SECTION: BULK PASTE & MANUAL ENTRY (SIDE-BY-SIDE 2-COLUMN GRID) -->
+            <div class="w-full mb-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <!-- Bulk Paste Box -->
                 <div class="apogee-card p-4 flex flex-col justify-between">
                     <div class="space-y-2">
@@ -341,204 +329,71 @@
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- VIEW 2: LASER CUT SETTINGS & SPECIFICATIONS SECTION -->
-        <section id="section-laser" class="space-y-6 hidden">
-            
-            <!-- CONTROLS & FILTER BAR -->
-            <div class="apogee-card p-4">
-                <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div class="w-full md:w-1/3 relative">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-                        <input 
-                            type="text" 
-                            id="laserSearchInput" 
-                            onkeyup="filterLaserSettings()" 
-                            placeholder="Search material, machine, thickness, code..." 
-                            class="w-full pl-8 pr-3 py-1.5 text-xs font-mono bg-slate-50 text-slate-800"
-                        />
-                    </div>
-                    <div class="w-full md:w-2/3 flex flex-wrap items-center justify-end gap-2 text-xs">
-                        <select id="materialFilter" onchange="filterLaserSettings()" class="bg-slate-50 px-3 py-1.5 text-xs text-slate-700 font-bold">
-                            <option value="ALL">All Materials</option>
-                            <option value="Balsa Wood">Balsa Wood</option>
-                            <option value="Plywood">Plywood (Aircraft / Birch)</option>
-                            <option value="Cardstock">Cardstock / Paperboard</option>
-                            <option value="Acrylic">Acrylic / Plastic</option>
-                            <option value="Fiberglass">Fiberglass / G10</option>
-                        </select>
-                        <select id="machineFilter" onchange="filterLaserSettings()" class="bg-slate-50 px-3 py-1.5 text-xs text-slate-700 font-bold">
-                            <option value="ALL">All Laser Machines</option>
-                            <option value="Epilog Fusion Pro 60W">Epilog Fusion Pro 60W</option>
-                            <option value="Universal ILS 75W">Universal ILS 75W</option>
-                            <option value="Trotec Speedy 300 80W">Trotec Speedy 300 80W</option>
-                        </select>
-                        <button onclick="openAddLaserModal()" class="btn-apogee-primary px-3 py-1.5 rounded font-bold flex items-center gap-1.5">
-                            <i class="fa-solid fa-plus text-apogeeYellow"></i> Add New Preset
-                        </button>
-                    </div>
-                </div>
+        <!-- SECTION 2: LASER CUT SETTINGS & SPECIFICATIONS ARCHIVE -->
+        <div class="mb-12">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b-2 border-apogeeBlue">
+                <h2 class="font-heading text-lg font-bold text-apogeeBlue uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-laser-pointer"></i> Laser Cutter Parameters & Specification Archive
+                </h2>
             </div>
 
-            <!-- SPECS & PRESETS GRID / TABLE -->
-            <div class="apogee-card overflow-hidden">
-                <div class="apogee-card-header px-4 py-3 flex items-center justify-between text-xs">
-                    <div class="font-bold uppercase tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-sliders text-apogeeBlue"></i> Laser Machine Presets & Cut Parameters
+            <!-- SEARCH & TELEMETRY HEADER BAR -->
+            <div class="w-full mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="apogee-card p-3.5 md:col-span-2 flex items-center gap-3">
+                    <div class="text-apogeeBlue pl-1 text-lg">
+                        <i class="fa-solid fa-magnifying-glass"></i>
                     </div>
-                    <div class="text-slate-500 font-normal" id="laserCountText">Loading presets...</div>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left font-sans text-xs">
-                        <thead>
-                            <tr class="bg-slate-100 text-slate-700 font-heading border-b border-slate-300 uppercase text-[11px] tracking-wider">
-                                <th class="p-3">Part/Component</th>
-                                <th class="p-3">Material & Thickness</th>
-                                <th class="p-3">Laser Machine</th>
-                                <th class="p-3 text-center">Power %</th>
-                                <th class="p-3 text-center">Speed %</th>
-                                <th class="p-3 text-center">Freq / PPI</th>
-                                <th class="p-3 text-center">Passes</th>
-                                <th class="p-3 text-center">Focus Offset</th>
-                                <th class="p-3 text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="laserTableBody">
-                            <!-- Dynamically loaded via JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- LASER CALCULATOR HELPER -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="apogee-card p-4">
-                    <div class="text-xs font-heading font-bold text-apogeeBlue uppercase mb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-calculator"></i> Speed / Power Ratio Scaling Tool
-                    </div>
-                    <p class="text-xs text-slate-600 mb-3">
-                        Adjust settings proportionally when transferring jobs between 60W, 75W, or 80W lasers.
-                    </p>
-                    <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
-                        <div>
-                            <label class="block text-slate-500 mb-1">Original Wattage</label>
-                            <input type="number" id="calcOrigWatt" value="60" class="w-full p-1.5 text-xs font-mono" />
-                        </div>
-                        <div>
-                            <label class="block text-slate-500 mb-1">Target Wattage</label>
-                            <input type="number" id="calcTargetWatt" value="75" class="w-full p-1.5 text-xs font-mono" />
-                        </div>
-                        <div>
-                            <label class="block text-slate-500 mb-1">Original Speed (%)</label>
-                            <input type="number" id="calcOrigSpeed" value="30" class="w-full p-1.5 text-xs font-mono" />
-                        </div>
-                        <div>
-                            <label class="block text-slate-500 mb-1">Original Power (%)</label>
-                            <input type="number" id="calcOrigPower" value="100" class="w-full p-1.5 text-xs font-mono" />
-                        </div>
-                    </div>
-                    <button onclick="calculateLaserRatio()" class="btn-apogee-secondary w-full py-1.5 font-bold text-xs rounded">
-                        Calculate Adjusted Parameters
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        oninput="handleSearch(this.value)" 
+                        placeholder="Search materials, part numbers (e.g., '14110', 'Plywood', 'Balsa', 'AC-24', 'Acrylic')..." 
+                        class="w-full bg-white text-slate-800 font-sans text-xs placeholder-slate-400 focus:outline-none"
+                    />
+                    <button onclick="clearSearch()" class="btn-apogee-secondary px-3 py-1 text-xs font-bold rounded">
+                        Clear
                     </button>
-                    <div id="calcResult" class="mt-3 p-2 bg-slate-50 rounded text-xs font-mono border border-slate-200 hidden">
-                        <!-- Result -->
-                    </div>
                 </div>
 
-                <div class="apogee-card p-4 flex flex-col justify-between">
-                    <div>
-                        <div class="text-xs font-heading font-bold text-apogeeBlue uppercase mb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-triangle-exclamation text-apogeeYellow"></i> Safety & Operational Notes
-                        </div>
-                        <ul class="text-xs text-slate-600 space-y-1.5 list-disc pl-4">
-                            <li>Always verify air assist pressure before running balsa or thin aircraft plywood.</li>
-                            <li>Ensure exhaust suction fan is powered on to clear smoke and soot deposits.</li>
-                            <li>Balsa density varies; increase power by 5% if material is unusually dense.</li>
-                            <li>Clean focus lens with optics cleaner every 4 hours of active operation.</li>
-                        </ul>
-                    </div>
-                    <div class="mt-4 pt-3 border-t border-slate-200 text-right">
-                        <button onclick="exportLaserSpecsCSV()" class="btn-apogee-secondary px-3 py-1.5 rounded text-xs font-bold">
-                            <i class="fa-solid fa-download text-apogeeBlue mr-1"></i> Export Laser Specs CSV
-                        </button>
-                    </div>
+                <div class="apogee-card p-3.5 flex items-center justify-between">
+                    <span id="searchStatus" class="font-heading font-bold text-xs text-apogeeBlue uppercase">// SHOWING 44 SPECS</span>
+                    <span class="text-xs text-slate-500 font-mono font-bold">DATABASE v4.0</span>
                 </div>
             </div>
-        </section>
+
+            <!-- CATEGORY FILTER PILLS -->
+            <div class="w-full flex items-center gap-2 overflow-x-auto pb-4 mb-4">
+                <button onclick="setCategory('ALL')" id="cat-ALL" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-primary shadow">ALL</button>
+                <button onclick="setCategory('PLYWOOD')" id="cat-PLYWOOD" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">PLYWOOD</button>
+                <button onclick="setCategory('BALSA')" id="cat-BALSA" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">BALSA</button>
+                <button onclick="setCategory('AT')" id="cat-AT" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">AT TUBES</button>
+                <button onclick="setCategory('AC')" id="cat-AC" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">AC COUPLERS</button>
+                <button onclick="setCategory('VAC-FORM')" id="cat-VAC-FORM" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">VAC-FORM</button>
+                <button onclick="setCategory('BASSWOOD')" id="cat-BASSWOOD" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">BASSWOOD</button>
+                <button onclick="setCategory('CARDBOARD')" id="cat-CARDBOARD" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">CARDBOARD</button>
+                <button onclick="setCategory('ACRYLIC')" id="cat-ACRYLIC" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">ACRYLIC</button>
+                <button onclick="setCategory('FOAM')" id="cat-FOAM" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">FOAM</button>
+            </div>
+
+            <!-- CUT SPECS GRID -->
+            <div id="cutsGrid" class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Populated via JavaScript -->
+            </div>
+        </div>
 
     </main>
 
     <!-- FOOTER -->
-    <footer class="w-full bg-slate-200 border-t border-slate-300 py-6 text-center space-y-2 mt-8">
+    <footer class="w-full bg-slate-200 border-t border-slate-300 py-6 text-center space-y-2">
         <div class="text-[11px] md:text-xs text-slate-600 max-w-4xl mx-auto px-4 leading-relaxed font-sans">
-            Please be advised this unified portal is for private use within Apogee Components, Inc.
+            Please be advised this is for private use within Apogee Components, developed for use in the warehouse by Travis.
         </div>
         <div class="text-xs text-slate-500 font-bold">
             Apogee Components, Inc. • Copyright © Travis B. 2014 - 2027
         </div>
     </footer>
-
-    <!-- MODAL FOR ADDING LASER PRESET -->
-    <div id="laserModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-lg shadow-2xl max-w-lg w-full overflow-hidden border border-slate-300">
-            <div class="apogee-card-header px-4 py-3 flex items-center justify-between">
-                <span class="font-bold text-xs uppercase text-apogeeBlue"><i class="fa-solid fa-plus-circle mr-1"></i> Add New Laser Cut Preset</span>
-                <button onclick="closeAddLaserModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-base"></i></button>
-            </div>
-            <div class="p-4 space-y-3 text-xs">
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">Part Code / Name</label>
-                    <input type="text" id="modalPart" placeholder="e.g. 10067 - Fin Set Centuri" class="w-full p-2" />
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">Material</label>
-                        <input type="text" id="modalMaterial" placeholder="e.g. Balsa Wood" class="w-full p-2" />
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">Thickness</label>
-                        <input type="text" id="modalThickness" placeholder="e.g. 3/32 in (2.4mm)" class="w-full p-2" />
-                    </div>
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">Laser Machine Model</label>
-                    <select id="modalMachine" class="w-full p-2">
-                        <option value="Epilog Fusion Pro 60W">Epilog Fusion Pro 60W</option>
-                        <option value="Universal ILS 75W">Universal ILS 75W</option>
-                        <option value="Trotec Speedy 300 80W">Trotec Speedy 300 80W</option>
-                    </select>
-                </div>
-                <div class="grid grid-cols-4 gap-2">
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">Power %</label>
-                        <input type="text" id="modalPower" placeholder="85" class="w-full p-2 font-mono text-center" />
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">Speed %</label>
-                        <input type="text" id="modalSpeed" placeholder="40" class="w-full p-2 font-mono text-center" />
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">Freq/PPI</label>
-                        <input type="text" id="modalFreq" placeholder="500 Hz" class="w-full p-2 font-mono text-center" />
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">Passes</label>
-                        <input type="text" id="modalPasses" placeholder="1" class="w-full p-2 font-mono text-center" />
-                    </div>
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">Focus Offset / Notes</label>
-                    <input type="text" id="modalFocus" placeholder="e.g. +0.05 in or Std Lens" class="w-full p-2" />
-                </div>
-            </div>
-            <div class="p-3 bg-slate-100 flex items-center justify-end gap-2 border-t border-slate-200">
-                <button onclick="closeAddLaserModal()" class="btn-apogee-secondary px-3 py-1.5 rounded text-xs">Cancel</button>
-                <button onclick="saveLaserPreset()" class="btn-apogee-primary px-4 py-1.5 rounded text-xs font-bold">Save Preset</button>
-            </div>
-        </div>
-    </div>
 
     <!-- TOAST NOTIFICATION -->
     <div id="toastBanner" class="fixed bottom-5 right-5 z-40 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
@@ -548,102 +403,55 @@
         </div>
     </div>
 
+    <!-- SCRIPT LOGIC -->
     <script>
-        // AUDIO SYNTHESIS & SOUND EFFECTS
+        // System Clock
+        setInterval(() => {
+            const now = new Date();
+            const clockEl = document.getElementById('sys-clock');
+            if(clockEl) clockEl.innerText = now.toTimeString().split(' ')[0];
+        }, 1000);
+
+        // Audio Synthesis
         let audioEnabled = true;
         let apogeeSynth = null;
-
         function initApogeeSynth() {
-            if (!apogeeSynth && typeof Tone !== 'undefined') {
-                try {
-                    apogeeSynth = new Tone.Synth({
-                        oscillator: { type: 'triangle' },
-                        envelope: { attack: 0.02, decay: 0.15, sustain: 0, release: 0.1 }
-                    }).toDestination();
-                } catch(e) {}
+            if (!apogeeSynth) {
+                apogeeSynth = new Tone.Synth({
+                    oscillator: { type: 'triangle' },
+                    envelope: { attack: 0.02, decay: 0.15, sustain: 0, release: 0.1 }
+                }).toDestination();
             }
         }
-
         function playApogeeNote(note = 'C5') {
             if (!audioEnabled) return;
             try {
-                if (Tone && Tone.context.state !== 'running') {
-                    Tone.start();
-                }
+                Tone.start();
                 initApogeeSynth();
-                if (apogeeSynth) {
-                    apogeeSynth.triggerAttackRelease(note, '16n');
-                }
+                apogeeSynth.triggerAttackRelease(note, '16n');
             } catch(e) {}
         }
 
-        function toggleAudio() {
-            audioEnabled = !audioEnabled;
-            const btn = document.getElementById('audioStatus');
-            const icon = document.getElementById('audioIcon');
-            if (audioEnabled) {
-                btn.textContent = 'AUDIO ON';
-                icon.className = 'fa-solid fa-volume-high text-apogeeYellow';
-                playApogeeNote('C5');
-            } else {
-                btn.textContent = 'AUDIO OFF';
-                icon.className = 'fa-solid fa-volume-xmark text-slate-400';
-            }
-        }
-
-        // STORAGE KEYS
+        /* ----------------------------------------------------
+           PRIORITY QUEUE LOGIC
+        ---------------------------------------------------- */
         const STORAGE_KEY_ITEMS = 'apogee_priority_items_v4';
         const STORAGE_KEY_DATE = 'apogee_priority_date_v4';
-        const STORAGE_KEY_LASER = 'apogee_laser_presets_v1';
 
-        // APPLICATION STATE
         let priorityState = {
             date: new Date().toISOString().split('T')[0],
-            items: []
+            items: [] // Empty list as requested
         };
 
-        let laserPresets = [
-            { id: 'l1', part: '10067 - Centuri Fin Set', material: 'Balsa Wood', thickness: '1/8 in (3.2mm)', machine: 'Epilog Fusion Pro 60W', power: '85%', speed: '35%', freq: '500 Hz', passes: '1', focus: 'Standard' },
-            { id: 'l2', part: '10068 - Aerobee Centering Rings', material: 'Plywood', thickness: '1/16 in (1.6mm)', machine: 'Universal ILS 75W', power: '90%', speed: '40%', freq: '1000 Hz', passes: '1', focus: '+0.02 in' },
-            { id: 'l3', part: '10105 - Saturn V Transition Ring', material: 'Cardstock', thickness: '0.020 in', machine: 'Epilog Fusion Pro 60W', power: '30%', speed: '80%', freq: '250 Hz', passes: '1', focus: 'Standard' },
-            { id: 'l4', part: '10220 - Custom Clear Fins', material: 'Acrylic', thickness: '1/8 in (3.2mm)', machine: 'Trotec Speedy 300 80W', power: '100%', speed: '15%', freq: '5000 Hz', passes: '1', focus: '-0.01 in' },
-            { id: 'l5', part: '10340 - High Power Bulkhead', material: 'Fiberglass', thickness: '3/32 in (2.4mm)', machine: 'Universal ILS 75W', power: '100%', speed: '10%', freq: '2000 Hz', passes: '2', focus: 'Standard' }
-        ];
-
-        // NAVIGATION LOGIC
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`tab-${tabName}`).classList.add('active');
-
-            const secQueue = document.getElementById('section-queue');
-            const secLaser = document.getElementById('section-laser');
-
-            if (tabName === 'queue') {
-                secQueue.classList.remove('hidden');
-                secLaser.classList.add('hidden');
-            } else if (tabName === 'laser') {
-                secQueue.classList.add('hidden');
-                secLaser.classList.remove('hidden');
-                renderLaserTable();
-            } else if (tabName === 'split') {
-                secQueue.classList.remove('hidden');
-                secLaser.classList.remove('hidden');
-                renderLaserTable();
-            }
-            playApogeeNote('E5');
-        }
-
-        // PRIORITY QUEUE LOGIC
         function loadFromCache() {
             try {
                 const savedDate = localStorage.getItem(STORAGE_KEY_DATE);
                 if (savedDate) priorityState.date = savedDate;
 
                 const savedItems = localStorage.getItem(STORAGE_KEY_ITEMS);
-                if (savedItems) priorityState.items = JSON.parse(savedItems);
-
-                const savedLaser = localStorage.getItem(STORAGE_KEY_LASER);
-                if (savedLaser) laserPresets = JSON.parse(savedLaser);
+                if (savedItems) {
+                    priorityState.items = JSON.parse(savedItems);
+                }
             } catch(e) {}
             
             document.getElementById('priorityDateInput').value = priorityState.date;
@@ -654,7 +462,6 @@
             try {
                 localStorage.setItem(STORAGE_KEY_DATE, priorityState.date);
                 localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(priorityState.items));
-                localStorage.setItem(STORAGE_KEY_LASER, JSON.stringify(laserPresets));
             } catch(e) {}
         }
 
@@ -814,40 +621,44 @@
             }
 
             const formattedRows = priorityState.items.map(item => {
+                const partNumber = item.code || '';
+                const itemDesc = item.description || '';
+                const sheets = '';
+                const materialUsed = '';
+                const kanbanColor = '';
+                const availStock = item.avail || '';
+                const inBoxBeforeBuild = '';
+                const qtyBuilt = item.madeActual || '';
+                const badQty = item.badActual || '';
+
                 return [
-                    item.code || '',
-                    item.description || '',
-                    '',
-                    '',
-                    '',
-                    item.avail || '',
-                    '',
-                    item.madeActual || '',
-                    item.badActual || ''
+                    partNumber,
+                    itemDesc,
+                    sheets,
+                    materialUsed,
+                    kanbanColor,
+                    availStock,
+                    inBoxBeforeBuild,
+                    qtyBuilt,
+                    badQty
                 ].join('\t');
             });
 
             const copyText = formattedRows.join('\n');
 
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(copyText).then(() => {
-                    playApogeeNote('C6');
-                    showToast(`Copied ${priorityState.items.length} item(s) formatted for Google Sheets!`);
-                }).catch(() => fallbackCopy(copyText));
-            } else {
-                fallbackCopy(copyText);
-            }
-        }
-
-        function fallbackCopy(text) {
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            playApogeeNote('C6');
-            showToast(`Copied ${priorityState.items.length} item(s) formatted for Google Sheets!`);
+            navigator.clipboard.writeText(copyText).then(() => {
+                playApogeeNote('C6');
+                showToast(`Copied ${priorityState.items.length} item(s) formatted for Google Sheets!`);
+            }).catch(err => {
+                const textArea = document.createElement('textarea');
+                textArea.value = copyText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                playApogeeNote('C6');
+                showToast(`Copied ${priorityState.items.length} item(s) formatted for Google Sheets!`);
+            });
         }
 
         function exportPriorityList() {
@@ -874,7 +685,6 @@
             const items = priorityState.items;
 
             document.getElementById('statTotal').textContent = items.length;
-            
             let totalQty = 0;
             items.forEach(i => {
                 if (!i.completed) {
@@ -933,161 +743,212 @@
             `).join('');
         }
 
-        // LASER CUT DATABASE LOGIC
-        function renderLaserTable() {
-            const tbody = document.getElementById('laserTableBody');
-            const searchVal = document.getElementById('laserSearchInput').value.toLowerCase();
-            const matVal = document.getElementById('materialFilter').value;
-            const machVal = document.getElementById('machineFilter').value;
+        /* ----------------------------------------------------
+           LASER CUT SETTINGS LOGIC
+        ---------------------------------------------------- */
+        const cutsData = [
+            { name: "1/32\" Plywood", pn: "14110", diameter: "N/A", class: "PLYWOOD", cut: { freq: 50, spd: 30, pwr: 32 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 5 }] },
+            { name: "1/16\" Plywood", pn: "14112", diameter: "N/A", class: "PLYWOOD", cut: { freq: 65, spd: 26, pwr: 85 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 26, pwr: 8 }, { type: "Raster", freq: "-", spd: 100, pwr: 40 }] },
+            { name: "1/8\" Plywood", pn: "40210", diameter: "N/A", class: "PLYWOOD", cut: { freq: 35, spd: 20, pwr: 100 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 100, pwr: 30 }, { type: "Raster", freq: "-", spd: 100, pwr: 35 }] },
+            { name: "1/4\" Plywood Single Cut", pn: "40212", diameter: "N/A", class: "PLYWOOD", cut: { freq: 35, spd: "10-11", pwr: 100 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 100, pwr: 15 }, { type: "Raster", freq: 50, spd: 100, pwr: 30 }] },
+            { name: "1/4\" Plywood Dual Cut", pn: "40212", diameter: "N/A", class: "PLYWOOD", cut: { freq: 65, spd: "10-17", pwr: 100 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 100, pwr: 15 }, { type: "Raster", freq: 50, spd: 100, pwr: 30 }] },
+            { name: "1/32\" Balsa", pn: "14105", diameter: "N/A", class: "BALSA", cut: { freq: 50, spd: 45, pwr: 15 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 3 }] },
+            { name: "1/16\" Balsa", pn: "14103", diameter: "N/A", class: "BALSA", cut: [{ type: "Cut (Hardwood)", freq: 50, spd: 45, pwr: 22 }, { type: "Cut (Softwood)", freq: 50, spd: 50, pwr: 16 }], engrave: [{ type: "Engrave / Raster", freq: 50, spd: 26, pwr: 3 }] },
+            { name: "3/32\" Balsa", pn: "14104", diameter: "N/A", class: "BALSA", cut: { freq: 50, spd: 50, pwr: 22 }, engrave: [] },
+            { name: "1/8\" Balsa", pn: "14102 / 14107", diameter: "N/A", class: "BALSA", cut: [{ type: "Cut (Hardwood)", freq: 50, spd: 30, pwr: 45 }, { type: "Cut (Softwood)", freq: 50, spd: 35, pwr: 40 }], engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 3 }, { type: "Raster", freq: "-", spd: 26, pwr: 12 }] },
+            { name: "3/16\" Balsa", pn: "14106", diameter: "N/A", class: "BALSA", cut: { freq: 50, spd: 50, pwr: 80 }, engrave: [{ type: "Engrave / Raster", freq: 0, spd: 0, pwr: 0 }] },
+            { name: "1/4\" Balsa", pn: "14109", diameter: "N/A", class: "BALSA", cut: { freq: 50, spd: 25, pwr: 80 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 26, pwr: 6 }] },
+            { name: "Foam Board / Foam Core", pn: "N/A", diameter: "N/A", class: "FOAM", cut: { freq: "-", spd: 100, pwr: 25 }, engrave: [{ type: "Engrave / Raster", freq: "-", spd: 12, pwr: 5 }] },
+            { name: "AT-13/18\"", pn: "10062", diameter: "OD: 0.544\" | ID (AC-13): 0.518\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 5 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 100, pwr: 2 }] },
+            { name: "AT-18/18\"", pn: "10085", diameter: "OD: 0.736\" | ID (AC-18): 0.710\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 5 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 2 }] },
+            { name: "AT-24/18\"", pn: "10089", diameter: "OD: 0.976\" | ID (AC-24): 0.950\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 7 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 1 }] },
+            { name: "AT-24/6\" Clear", pn: "10101", diameter: "OD: 0.976\" | ID (AC-24): 0.950\"", class: "AT", cut: { freq: "-", spd: 37, pwr: 15 }, engrave: [] },
+            { name: "AT-29/13\"", pn: "10110", diameter: "OD: 1.176\" | ID (AC-29): 1.140\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 7 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 1 }] },
+            { name: "AT-29/7\" Thick Wall", pn: "10250", diameter: "OD: 1.176\" | ID (AC-29): 1.140\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 10 }, engrave: [] },
+            { name: "AT-33/18\"", pn: "10130", diameter: "OD: 1.325\" | ID (AC-33): 1.283\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 6 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 1 }] },
+            { name: "AT-41.6/18\"", pn: "10140", diameter: "OD: 1.637\" | ID (AC-41.6): 1.595\"", class: "AT", cut: { freq: 50, spd: 45, pwr: 10 }, engrave: [] },
+            { name: "AT-56/18", pn: "10160", diameter: "OD: 2.217\" | ID (AC-56): 2.180\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 9 }, engrave: [] },
+            { name: "AT-66/18\"", pn: "10197", diameter: "OD: 2.600\" | ID (AC-66): 2.558\"", class: "AT", cut: { freq: 50, spd: 60, pwr: 12 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 60, pwr: 3 }] },
+            { name: "AT-74/18\"", pn: "10201", diameter: "OD: 2.990\" | ID (AC-74): 2.945\"", class: "AT", cut: { freq: 50, spd: 70, pwr: 30 }, engrave: [] },
+            { name: "AT-98/18\" (4\")", pn: "10218", diameter: "OD: 3.990\" | ID (AC-98): N/A", class: "AT", cut: { freq: 50, spd: 40, pwr: 20 }, engrave: [] },
+            { name: "AC-13 Coupler", pn: "13012", diameter: "ID: 0.518\" | OD: 0.544\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 5 }, engrave: [] },
+            { name: "AC-18 Coupler", pn: "13013", diameter: "ID: 0.710\" | OD: 0.736\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 9 }, engrave: [] },
+            { name: "AC-24 Coupler", pn: "13007", diameter: "ID: 0.950\" | OD: 0.976\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 7 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 2 }] },
+            { name: "AC-33 Coupler", pn: "13016", diameter: "ID: 1.283\" | OD: 1.325\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 7 }, engrave: [] },
+            { name: "AC-41.6 / BT-60 Coupler", pn: "13018", diameter: "ID: 1.595\" | OD: 1.637\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 7 }, engrave: [] },
+            { name: "AC-56 / BT-70 Coupler", pn: "13042", diameter: "ID: 2.180\" | OD: 2.217\"", class: "AC", cut: { freq: 50, spd: 45, pwr: 12 }, engrave: [] },
+            { name: "AC-66 / BT-80 Coupler", pn: "13044", diameter: "ID: 2.558\" | OD: 2.600\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 12 }, engrave: [] },
+            { name: "AC-74 / 3\" Coupler", pn: "13046", diameter: "ID: 2.945\" | OD: 2.990\"", class: "AC", cut: { freq: 50, spd: 50, pwr: 24 }, engrave: [{ type: "Engrave / Raster", freq: "-", spd: 60, pwr: 3 }] },
+            { name: "Vac-Form .01", pn: "30001", diameter: "N/A", class: "VAC-FORM", cut: { freq: 50, spd: 60, pwr: 5 }, engrave: [] },
+            { name: "Vac-Form .02", pn: "30002", diameter: "N/A", class: "VAC-FORM", cut: { freq: 50, spd: 37, pwr: 3 }, engrave: [] },
+            { name: "Vac-Form .03", pn: "30003", diameter: "N/A", class: "VAC-FORM", cut: { freq: 50, spd: 100, pwr: 7 }, engrave: [] },
+            { name: "Vac-Form .03 Clear", pn: "13007", diameter: "N/A", class: "VAC-FORM", cut: { freq: 50, spd: 90, pwr: 10 }, engrave: [] },
+            { name: "Vac-Form .06", pn: "13016", diameter: "N/A", class: "VAC-FORM", cut: { freq: 50, spd: 90, pwr: 18 }, engrave: [] },
+            { name: "Acrylic", pn: "40218", diameter: "N/A", class: "ACRYLIC", cut: { freq: 50, spd: 10, pwr: 60 }, engrave: [] },
+            { name: "Cardstock", pn: "44000 / 44001", diameter: "OD: 0.976\" | ID: 0.950\"", class: "CARDBOARD", cut: { freq: 40, spd: 30, pwr: 40 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 40, pwr: 8 }] },
+            { name: "Basswood 3/32\"", pn: "14123", diameter: "N/A", class: "BASSWOOD", cut: { freq: 50, spd: 30, pwr: 85 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 40, pwr: 5 }] },
+            { name: "Basswood 1/8\"", pn: "14121", diameter: "N/A", class: "BASSWOOD", cut: { freq: 50, spd: 25, pwr: 85 }, engrave: [] },
+            { name: "Corrugated Cardboard", pn: "44007", diameter: "N/A", class: "CARDBOARD", cut: { freq: 50, spd: 35, pwr: 50 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 50, pwr: 8 }] },
+            { name: "10.5mm Tube", pn: "N/A", diameter: "OD: 0.466\" | ID: 0.422\"", class: "AT", cut: null, engrave: [], note: "SETTINGS NOT SPECIFIED" },
+            { name: "98mm / 4\" Tube", pn: "N/A", diameter: "OD: 3.990\" | ID: N/A", class: "AT", cut: { freq: 50, spd: 40, pwr: 20 }, engrave: [] }
+        ];
 
-            const filtered = laserPresets.filter(p => {
-                const matchesSearch = p.part.toLowerCase().includes(searchVal) || 
-                                     p.material.toLowerCase().includes(searchVal) ||
-                                     p.thickness.toLowerCase().includes(searchVal);
-                const matchesMat = matVal === 'ALL' || p.material === matVal;
-                const matchesMach = machVal === 'ALL' || p.machine === machVal;
-                return matchesSearch && matchesMat && matchesMach;
+        let cutState = {
+            searchQuery: '',
+            category: 'ALL'
+        };
+
+        function renderCuts() {
+            const container = document.getElementById('cutsGrid');
+            const query = (cutState.searchQuery || '').toLowerCase().trim();
+
+            const filtered = cutsData.filter(item => {
+                if (cutState.category !== 'ALL' && item.class !== cutState.category) return false;
+                if (!query) return true;
+                const matchString = (item.name + ' ' + item.pn + ' ' + item.diameter + ' ' + item.class).toLowerCase();
+                return matchString.includes(query);
             });
 
-            document.getElementById('laserCountText').textContent = `${filtered.length} presets showing`;
+            document.getElementById('searchStatus').textContent = `// SHOWING ${filtered.length} OF ${cutsData.length} CUT SPECS`;
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="9" class="p-8 text-center text-slate-400 italic">
-                            No laser cut presets found matching filter criteria.
-                        </td>
-                    </tr>
+                container.innerHTML = `<div class="col-span-full py-12 text-center font-sans text-slate-400 italic">No matching laser cut parameters found.</div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map((item, idx) => {
+                let cutHtml = '';
+                if (item.note) {
+                    cutHtml = `<div class="text-xs text-amber-600 font-mono italic">${item.note}</div>`;
+                } else if (Array.isArray(item.cut)) {
+                    cutHtml = item.cut.map(c => `
+                        <div class="grid grid-cols-3 gap-2 text-xs font-mono bg-slate-50 p-2 rounded border border-slate-200 mb-1.5">
+                            <div class="text-slate-700 font-bold col-span-full">${c.type}</div>
+                            <div><span class="text-slate-400">FREQ:</span> <strong class="text-slate-800">${c.freq}</strong></div>
+                            <div><span class="text-slate-400">SPD:</span> <strong class="text-slate-800">${c.spd}</strong></div>
+                            <div><span class="text-slate-400">PWR:</span> <strong class="text-apogeeRed">${c.pwr}</strong></div>
+                        </div>
+                    `).join('');
+                } else if (item.cut) {
+                    cutHtml = `
+                        <div class="grid grid-cols-3 gap-2 text-xs font-mono bg-slate-50 p-2 rounded border border-slate-200">
+                            <div><span class="text-slate-400">FREQ:</span> <strong class="text-slate-800">${item.cut.freq}</strong></div>
+                            <div><span class="text-slate-400">SPD:</span> <strong class="text-slate-800">${item.cut.spd}</strong></div>
+                            <div><span class="text-slate-400">PWR:</span> <strong class="text-apogeeRed">${item.cut.pwr}</strong></div>
+                        </div>
+                    `;
+                }
+
+                let engraveHtml = '';
+                if (item.engrave && item.engrave.length > 0) {
+                    engraveHtml = item.engrave.map(e => `
+                        <div class="grid grid-cols-3 gap-2 text-xs font-mono bg-slate-50 p-2 rounded border border-slate-200 mt-1.5">
+                            <div class="text-slate-600 col-span-full font-bold">${e.type}</div>
+                            <div><span class="text-slate-400">FREQ:</span> <strong class="text-slate-800">${e.freq}</strong></div>
+                            <div><span class="text-slate-400">SPD:</span> <strong class="text-slate-800">${e.spd}</strong></div>
+                            <div><span class="text-slate-400">PWR:</span> <strong class="text-apogeeBlue">${e.pwr}</strong></div>
+                        </div>
+                    `).join('');
+                }
+
+                return `
+                    <div class="cut-card rounded-lg p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-start justify-between gap-2 mb-2">
+                                <div>
+                                    <div class="text-[10px] font-heading uppercase tracking-wider text-apogeeBlue font-bold">${item.class}</div>
+                                    <h3 class="font-bold text-slate-800 text-sm font-heading">${item.name}</h3>
+                                </div>
+                                <span class="text-xs font-mono px-2 py-0.5 bg-slate-100 border border-slate-300 text-slate-700 rounded font-bold">P/N: ${item.pn}</span>
+                            </div>
+                            <div class="text-xs text-slate-500 font-mono mb-3 pb-2 border-b border-slate-200">
+                                <div>DIAMETER: <span class="text-slate-700 font-bold">${item.diameter}</span></div>
+                            </div>
+
+                            <div class="space-y-2 mb-4">
+                                <div class="text-[10px] font-heading font-bold text-slate-400 uppercase tracking-wider">CUT PARAMETERS</div>
+                                ${cutHtml}
+                                ${engraveHtml ? '<div class="text-[10px] font-heading font-bold text-slate-400 uppercase tracking-wider mt-3">ENGRAVE / RASTER</div>' + engraveHtml : ''}
+                            </div>
+                        </div>
+
+                        <button onclick="copyHudSpec(${idx})" class="btn-apogee-secondary w-full py-2 text-xs font-bold rounded flex items-center justify-center gap-2 transition active:scale-95">
+                            <i class="fa-solid fa-copy text-apogeeBlue"></i>
+                            <span>Copy Spec</span>
+                        </button>
+                    </div>
                 `;
-                return;
-            }
-
-            tbody.innerHTML = filtered.map(p => `
-                <tr class="priority-row">
-                    <td class="p-3 font-bold text-slate-800">${p.part}</td>
-                    <td class="p-3 text-slate-700">${p.material} (${p.thickness})</td>
-                    <td class="p-3 text-slate-600 font-mono text-[11px]">${p.machine}</td>
-                    <td class="p-3 text-center font-mono font-bold text-apogeeBlue">${p.power}</td>
-                    <td class="p-3 text-center font-mono font-bold text-slate-700">${p.speed}</td>
-                    <td class="p-3 text-center font-mono text-slate-600">${p.freq}</td>
-                    <td class="p-3 text-center font-mono text-slate-600">${p.passes}</td>
-                    <td class="p-3 text-center font-mono text-slate-600">${p.focus}</td>
-                    <td class="p-3 text-center">
-                        <button onclick="copyLaserPreset('${p.id}')" class="text-apogeeBlue hover:text-apogeeBlueDark p-1 mr-2" title="Copy Specs">
-                            <i class="fa-solid fa-copy"></i>
-                        </button>
-                        <button onclick="deleteLaserPreset('${p.id}')" class="text-slate-400 hover:text-red-600 p-1" title="Delete">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
+            }).join('');
         }
 
-        function filterLaserSettings() {
-            renderLaserTable();
+        function handleSearch(val) {
+            cutState.searchQuery = val;
+            renderCuts();
         }
 
-        function openAddLaserModal() {
-            document.getElementById('laserModal').classList.remove('hidden');
+        function clearSearch() {
+            cutState.searchQuery = '';
+            document.getElementById('searchInput').value = '';
+            renderCuts();
         }
 
-        function closeAddLaserModal() {
-            document.getElementById('laserModal').classList.add('hidden');
-        }
-
-        function saveLaserPreset() {
-            const part = document.getElementById('modalPart').value.trim();
-            const material = document.getElementById('modalMaterial').value.trim();
-            const thickness = document.getElementById('modalThickness').value.trim();
-            const machine = document.getElementById('modalMachine').value;
-            const power = document.getElementById('modalPower').value.trim() || '100%';
-            const speed = document.getElementById('modalSpeed').value.trim() || '30%';
-            const freq = document.getElementById('modalFreq').value.trim() || '500 Hz';
-            const passes = document.getElementById('modalPasses').value.trim() || '1';
-            const focus = document.getElementById('modalFocus').value.trim() || 'Standard';
-
-            if (!part || !material) {
-                showToast('Please fill out at least Part Name and Material.');
-                return;
-            }
-
-            const newPreset = {
-                id: 'l_' + Date.now(),
-                part, material, thickness, machine,
-                power: power.includes('%') ? power : power + '%',
-                speed: speed.includes('%') ? speed : speed + '%',
-                freq, passes, focus
-            };
-
-            laserPresets.push(newPreset);
-            saveToCache();
-            renderLaserTable();
-            closeAddLaserModal();
-            playApogeeNote('C6');
-            showToast(`Preset added for ${part}`);
-
-            // Clear inputs
-            document.getElementById('modalPart').value = '';
-            document.getElementById('modalMaterial').value = '';
-            document.getElementById('modalThickness').value = '';
-        }
-
-        function deleteLaserPreset(id) {
-            laserPresets = laserPresets.filter(p => p.id !== id);
-            saveToCache();
-            renderLaserTable();
-            playApogeeNote('A4');
-            showToast('Preset deleted.');
-        }
-
-        function copyLaserPreset(id) {
-            const p = laserPresets.find(x => x.id === id);
-            if (!p) return;
-            const text = `Part: ${p.part} | Material: ${p.material} (${p.thickness}) | Machine: ${p.machine} | Power: ${p.power} | Speed: ${p.speed} | Freq: ${p.freq} | Passes: ${p.passes}`;
-            
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).then(() => showToast('Preset specs copied to clipboard!'));
-            } else {
-                fallbackCopy(text);
-            }
-        }
-
-        function calculateLaserRatio() {
-            const w1 = parseFloat(document.getElementById('calcOrigWatt').value) || 60;
-            const w2 = parseFloat(document.getElementById('calcTargetWatt').value) || 75;
-            const s1 = parseFloat(document.getElementById('calcOrigSpeed').value) || 30;
-            const p1 = parseFloat(document.getElementById('calcOrigPower').value) || 100;
-
-            const ratio = w2 / w1;
-            const adjSpeed = Math.min(100, Math.round(s1 * ratio));
-            const adjPower = Math.min(100, Math.round(p1 / ratio));
-
-            const resDiv = document.getElementById('calcResult');
-            resDiv.classList.remove('hidden');
-            resDiv.innerHTML = `
-                <strong>Estimated Scaling (${w1}W -> ${w2}W):</strong><br/>
-                • Maintain Power ${p1}% -> Increase Speed to <strong>${adjSpeed}%</strong><br/>
-                • Maintain Speed ${s1}% -> Adjust Power to <strong>${adjPower}%</strong>
-            `;
+        function setCategory(cat) {
+            cutState.category = cat;
+            ['ALL', 'PLYWOOD', 'BALSA', 'AT', 'AC', 'VAC-FORM', 'BASSWOOD', 'CARDBOARD', 'ACRYLIC', 'FOAM'].forEach(c => {
+                const btn = document.getElementById(`cat-${c}`);
+                if(btn) {
+                    if(c === cat) {
+                        btn.className = 'px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-primary shadow';
+                    } else {
+                        btn.className = 'px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary';
+                    }
+                }
+            });
+            renderCuts();
             playApogeeNote('E5');
         }
 
-        function exportLaserSpecsCSV() {
-            let csv = 'Part,Material,Thickness,Machine,Power,Speed,Frequency,Passes,Focus Offset\n';
-            laserPresets.forEach(p => {
-                csv += `"${p.part}","${p.material}","${p.thickness}","${p.machine}","${p.power}","${p.speed}","${p.freq}","${p.passes}","${p.focus}"\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.setAttribute('href', url);
-            a.setAttribute('download', `apogee_laser_specs.csv`);
-            a.click();
-            playApogeeNote('G5');
-            showToast('Laser specs exported to CSV.');
+        function copyHudSpec(idx) {
+            const item = cutsData.filter(i => {
+                if (cutState.category !== 'ALL' && i.class !== cutState.category) return false;
+                const query = (cutState.searchQuery || '').toLowerCase().trim();
+                if (!query) return true;
+                return (i.name + ' ' + i.pn + ' ' + i.diameter + ' ' + i.class).toLowerCase().includes(query);
+            })[idx];
+
+            if (!item) return;
+
+            let text = `${item.name}\nP/N: ${item.pn}\nDIAMETER: ${item.diameter}\nCLASS: ${item.class}\n`;
+            if (item.cut) {
+                if (Array.isArray(item.cut)) {
+                    item.cut.forEach(c => text += `${c.type}: FREQ: ${c.freq} | SPD: ${c.spd} | PWR: ${c.pwr}\n`);
+                } else {
+                    text += `Cut: FREQ: ${item.cut.freq} | SPD: ${item.cut.spd} | PWR: ${item.cut.pwr}\n`;
+                }
+            }
+            if (item.engrave && item.engrave.length > 0) {
+                item.engrave.forEach(e => text += `${e.type}: FREQ: ${e.freq} | SPD: ${e.spd} | PWR: ${e.pwr}\n`);
+            }
+
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast(`Copied spec for ${item.name}!`);
+                playApogeeNote('G5');
+            } catch (err) {
+                showToast(`Failed to copy spec.`);
+            }
+            document.body.removeChild(textArea);
         }
 
+        /* ----------------------------------------------------
+           TOAST NOTIFICATION LOGIC
+        ---------------------------------------------------- */
         let toastTimer = null;
         function showToast(msg) {
             const banner = document.getElementById('toastBanner');
@@ -1103,7 +964,7 @@
 
         window.onload = function () {
             loadFromCache();
-            renderLaserTable();
+            renderCuts();
         };
     </script>
 </body>
