@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apogee Components - Production & Laser Cut Hub</title>
+    <link rel="icon" type="image/svg+xml" href="https://apogeerockets.com/favicon.ico">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        apogeeBlue: '#005596',
+                        apogeeBlueDark: '#003d6d',
+                        apogeeBlueLight: '#1d74b9',
+                        apogeeRed: '#c8102e',
+                        apogeeRedDark: '#990011',
+                        apogeeYellow: '#ffcc00',
+                        apogeeGrayBg: '#f4f6f8',
+                        apogeePanelBg: '#ffffff',
+                        apogeeBorder: '#cbd5e1',
+                        apogeeHeaderBg: '#1e293b',
+                        apogeeRowHover: '#f0f7ff',
+                        apogeeSuccess: '#15803d'
+                    },
+                    fontFamily: {
+                        sans: ['Arial', 'Helvetica', 'sans-serif'],
+                        heading: ['Trebuchet MS', 'Arial', 'sans-serif'],
+                        mono: ['Courier New', 'Courier', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Tone.js for audio feedback synthesis -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f4f6f8;
+            color: #1f2937;
+        }
+
+        .apogee-header {
+            background: linear-gradient(180deg, #005596 0%, #003d6d 100%);
+            border-bottom: 4px solid #c8102e;
+        }
+
+        .apogee-card {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .apogee-card-header {
+            background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+            border-bottom: 1px solid #cbd5e1;
+            color: #0f172a;
+            font-family: 'Trebuchet MS', Arial, sans-serif;
+            font-weight: bold;
+        }
+
+        .btn-apogee-primary {
+            background: linear-gradient(180deg, #005596 0%, #003d6d 100%);
+            color: white;
+            border: 1px solid #002b4d;
+        }
+        .btn-apogee-primary:hover {
+            background: linear-gradient(180deg, #1d74b9 0%, #005596 100%);
+        }
+
+        .btn-apogee-green {
+            background: linear-gradient(180deg, #16a34a 0%, #15803d 100%);
+            color: white;
+            border: 1px solid #14532d;
+        }
+        .btn-apogee-green:hover {
+            background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+        }
+
+        .btn-apogee-red {
+            background: linear-gradient(180deg, #c8102e 0%, #990011 100%);
+            color: white;
+            border: 1px solid #77000d;
+        }
+        .btn-apogee-red:hover {
+            background: linear-gradient(180deg, #e01e37 0%, #c8102e 100%);
+        }
+
+        .btn-apogee-secondary {
+            background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
+            color: #334155;
+            border: 1px solid #cbd5e1;
+        }
+        .btn-apogee-secondary:hover {
+            background: linear-gradient(180deg, #f1f5f9 0%, #cbd5e1 100%);
+        }
+
+        .priority-row {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background-color 0.15s ease;
+        }
+        .priority-row:hover {
+            background-color: #f0f7ff;
+        }
+        .priority-row.completed {
+            background-color: #f8fafc;
+            opacity: 0.65;
+        }
+        .priority-row.completed .priority-text {
+            text-decoration: line-through;
+            color: #64748b;
+        }
+
+        input[type="text"], input[type="date"], input[type="number"], select, textarea {
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+        }
+        input[type="text"]:focus, input[type="date"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #005596;
+            box-shadow: 0 0 0 2px rgba(0, 85, 150, 0.2);
+        }
+
+        .tab-btn {
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .tab-btn.active {
+            border-bottom-color: #ffcc00;
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between select-none">
+
+    <!-- APOGEE BRANDED HEADER BAR WITH NAVIGATION -->
+    <header class="apogee-header text-white pt-4 pb-0 px-4 md:px-8 shadow-md sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-3 mb-3">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-rocket text-apogeeYellow text-3xl"></i>
+                    <div>
+                        <h1 class="font-heading text-2xl font-bold tracking-wider text-white uppercase leading-none">
+                            Apogee Components
+                        </h1>
+                        <p class="text-xs text-blue-200 tracking-wide uppercase font-semibold mt-1">
+                            Production Priority Tracker & Laser Cut Specifications
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleAudio()" id="audioBtn" class="text-xs font-mono bg-black/20 hover:bg-black/30 px-3 py-1.5 rounded border border-white/20 flex items-center gap-1.5 transition">
+                        <i id="audioIcon" class="fa-solid fa-volume-high text-apogeeYellow"></i>
+                        <span id="audioStatus">AUDIO ON</span>
+                    </button>
+                    <div class="flex items-center space-x-2 text-xs font-mono bg-black/20 px-3 py-1.5 rounded border border-white/10">
+                        <i class="fa-solid fa-cloud text-apogeeYellow"></i>
+                        <span>LOCAL CACHE ACTIVE</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NAVIGATION TABS -->
+            <div class="flex space-x-2 border-t border-white/10 pt-1">
+                <button onclick="switchTab('queue')" id="tab-queue" class="tab-btn active px-4 py-2 text-xs uppercase tracking-wider rounded-t flex items-center gap-2 hover:text-white text-blue-100">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>Priority Queue</span>
+                </button>
+                <button onclick="switchTab('laser')" id="tab-laser" class="tab-btn px-4 py-2 text-xs uppercase tracking-wider rounded-t flex items-center gap-2 hover:text-white text-blue-100">
+                    <i class="fa-solid fa-bolt"></i>
+                    <span>Laser Cut Database</span>
+                </button>
+                <button onclick="switchTab('split')" id="tab-split" class="tab-btn hidden lg:flex px-4 py-2 text-xs uppercase tracking-wider rounded-t items-center gap-2 hover:text-white text-blue-100">
+                    <i class="fa-solid fa-columns"></i>
+                    <span>Combined Dashboard</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="w-full max-w-7xl mx-auto px-4 md:px-8 py-6 flex-grow">
+
+        <!-- VIEW 1: PRIORITY QUEUE SECTION -->
+        <section id="section-queue" class="space-y-6">
+            <!-- HOW TO USE DROPDOWN -->
+            <div class="w-full">
+                <details class="apogee-card group">
+                    <summary class="apogee-card-header p-3.5 flex items-center justify-between cursor-pointer text-xs uppercase font-bold text-apogeeBlue hover:text-apogeeBlueDark transition select-none">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-circle-question text-apogeeBlue text-base"></i>
+                            <span>How to Use / Priority Report Copying Instructions</span>
+                        </span>
+                        <i class="fa-solid fa-chevron-down transform group-open:rotate-180 transition-transform duration-200 text-slate-500"></i>
+                    </summary>
+                    <div class="p-4 border-t border-slate-200 bg-slate-50 flex flex-col items-center">
+                        <p class="text-xs text-slate-600 mb-3 font-sans max-w-2xl text-center">
+                            Select and copy rows directly from <code class="bg-slate-200 px-1 py-0.5 rounded font-mono">apogeerockets.com/docs/Priority_Build_Report.html</code> table, then paste into the box below and click <strong>Parse & Load Data</strong>.
+                        </p>
+                        <div class="rounded overflow-hidden border border-slate-300 shadow-md max-w-4xl w-full bg-white p-2 text-center">
+                            <img src="https://raw.githubusercontent.com/warehouse-sketch/production/main/webfiles/howtouse.gif" onerror="this.onerror=null; this.src='https://placehold.co/800x250/005596/ffffff?text=Copy+rows+from+Priority+Report+and+paste+into+text+area';" alt="How to copy and paste priority queue data" class="w-full h-auto block rounded" />
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+            <!-- CONTROL BAR: DATE & ACTIONS -->
+            <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Schedule Date -->
+                <div class="apogee-card p-3.5 flex items-center justify-between">
+                    <div class="text-xs font-bold font-heading text-slate-700 uppercase">
+                        <i class="fa-solid fa-calendar-days text-apogeeBlue mr-1"></i> Schedule Date:
+                    </div>
+                    <input 
+                        type="date" 
+                        id="priorityDateInput" 
+                        onchange="updatePriorityDate(this.value)" 
+                        class="bg-white text-slate-800 font-mono text-xs px-3 py-1.5 focus:outline-none"
+                    />
+                </div>
+
+                <!-- Stats & Quick Count -->
+                <div class="apogee-card p-3.5 flex items-center justify-between">
+                    <div class="text-xs font-heading font-bold text-slate-700">
+                        TOTAL ITEMS: <strong id="statTotal" class="text-apogeeBlue text-sm ml-1">0</strong>
+                    </div>
+                    <div class="text-xs font-heading font-bold text-slate-700">
+                        PENDING QTY: <strong id="statQty" class="text-apogeeRed text-sm ml-1">0</strong>
+                    </div>
+                </div>
+
+                <!-- Clear & Export Actions -->
+                <div class="apogee-card p-3.5 flex items-center justify-end gap-2 flex-wrap">
+                    <button onclick="copyQueueForGoogleSheets()" class="btn-apogee-green px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5" title="Copy queue formatted for Google Sheets">
+                        <i class="fa-solid fa-copy"></i> Copy to Sheets
+                    </button>
+                    <button onclick="clearAllPriorities()" class="btn-apogee-red px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-trash-can"></i> Clear List
+                    </button>
+                    <button onclick="exportPriorityList()" class="btn-apogee-secondary px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-file-csv text-apogeeBlue"></i> CSV
+                    </button>
+                </div>
+            </div>
+
+            <!-- INPUT SECTION: BULK PASTE & MANUAL ENTRY (SIDE-BY-SIDE GRID) -->
+            <div class="w-full grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <!-- Bulk Paste Box -->
+                <div class="apogee-card p-4 flex flex-col justify-between">
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-xs font-heading font-bold mb-2">
+                            <span class="text-apogeeBlue uppercase"><i class="fa-solid fa-paste mr-1"></i> Paste Priority Data (Tab-Separated)</span>
+                        </div>
+                        <textarea 
+                            id="pasteInputArea" 
+                            rows="4" 
+                            placeholder="Paste copied Priority Build Report / inventory rows here..."
+                            class="w-full bg-slate-50 p-2.5 text-xs font-mono text-slate-800 placeholder-slate-400 resize-y"
+                        ></textarea>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-100 mt-3">
+                        <div class="text-[11px] text-slate-500 font-sans">
+                            Auto-extracts Parent Code, Desc, Avail, Max, Run Qty.
+                        </div>
+                        <button onclick="handleParseAndLoad()" class="btn-apogee-primary px-4 py-2 font-bold text-xs rounded shadow transition active:scale-95 flex items-center gap-2">
+                            <i class="fa-solid fa-bolt text-apogeeYellow"></i>
+                            <span>Parse & Load Data</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Manual Single Item Entry Box -->
+                <div class="apogee-card p-4 flex flex-col justify-between">
+                    <div>
+                        <div class="text-xs font-heading font-bold text-apogeeBlue uppercase mb-2">
+                            <i class="fa-solid fa-circle-plus mr-1"></i> Manual Item Entry
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <input type="text" id="manualCode" placeholder="Code (e.g. 10067)" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                            <input type="text" id="manualRunQty" placeholder="Run Qty" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <input type="text" id="manualAvail" placeholder="Avail" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                            <input type="text" id="manualMax" placeholder="Max" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                        </div>
+                        <input type="text" id="manualDesc" placeholder="Description" class="w-full bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800 mb-2" />
+                    </div>
+                    <button onclick="handleManualAdd()" class="btn-apogee-secondary w-full py-2 font-bold text-xs rounded transition active:scale-95 flex items-center justify-center gap-1.5 border-slate-300 mt-2">
+                        <i class="fa-solid fa-plus text-apogeeBlue"></i> Add Item to Queue
+                    </button>
+                </div>
+            </div>
+
+            <!-- TABLE DISPLAY SECTION -->
+            <div class="w-full">
+                <div class="apogee-card overflow-hidden">
+                    <div class="apogee-card-header px-4 py-3 flex items-center justify-between text-xs">
+                        <div class="font-bold uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-apogeeBlue"></i> Active Priority Queue
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button onclick="copyQueueForGoogleSheets()" class="btn-apogee-green px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-copy"></i> Copy Active Queue for Google Sheets
+                            </button>
+                            <div class="text-slate-500 font-normal" id="queueStatusText">0 items loaded</div>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left font-sans text-xs">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-700 font-heading border-b border-slate-300 uppercase text-[11px] tracking-wider">
+                                    <th class="p-3 w-10 text-center">✓</th>
+                                    <th class="p-3">Parent Code</th>
+                                    <th class="p-3">Description</th>
+                                    <th class="p-3 text-center">Avail</th>
+                                    <th class="p-3 text-center">Max</th>
+                                    <th class="p-3 text-center text-apogeeRed font-bold">Priority Run Qty</th>
+                                    <th class="p-3 text-center text-apogeeBlue font-bold w-28">Made Actual</th>
+                                    <th class="p-3 text-center text-red-600 font-bold w-28">Bad</th>
+                                    <th class="p-3 text-center w-16">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="priorityTableBody">
+                                <!-- Populated dynamically via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: LASER CUT SETTINGS & SPECIFICATIONS SECTION -->
+        <section id="section-laser" class="space-y-6 hidden">
+            
+            <!-- CONTROLS & FILTER BAR -->
+            <div class="apogee-card p-4">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div class="w-full md:w-1/3 relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                        <input 
+                            type="text" 
+                            id="laserSearchInput" 
+                            onkeyup="filterLaserSettings()" 
+                            placeholder="Search material, machine, thickness, code..." 
+                            class="w-full pl-8 pr-3 py-1.5 text-xs font-mono bg-slate-50 text-slate-800"
+                        />
+                    </div>
+                    <div class="w-full md:w-2/3 flex flex-wrap items-center justify-end gap-2 text-xs">
+                        <select id="materialFilter" onchange="filterLaserSettings()" class="bg-slate-50 px-3 py-1.5 text-xs text-slate-700 font-bold">
+                            <option value="ALL">All Materials</option>
+                            <option value="Balsa Wood">Balsa Wood</option>
+                            <option value="Plywood">Plywood (Aircraft / Birch)</option>
+                            <option value="Cardstock">Cardstock / Paperboard</option>
+                            <option value="Acrylic">Acrylic / Plastic</option>
+                            <option value="Fiberglass">Fiberglass / G10</option>
+                        </select>
+                        <select id="machineFilter" onchange="filterLaserSettings()" class="bg-slate-50 px-3 py-1.5 text-xs text-slate-700 font-bold">
+                            <option value="ALL">All Laser Machines</option>
+                            <option value="Epilog Fusion Pro 60W">Epilog Fusion Pro 60W</option>
+                            <option value="Universal ILS 75W">Universal ILS 75W</option>
+                            <option value="Trotec Speedy 300 80W">Trotec Speedy 300 80W</option>
+                        </select>
+                        <button onclick="openAddLaserModal()" class="btn-apogee-primary px-3 py-1.5 rounded font-bold flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus text-apogeeYellow"></i> Add New Preset
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SPECS & PRESETS GRID / TABLE -->
+            <div class="apogee-card overflow-hidden">
+                <div class="apogee-card-header px-4 py-3 flex items-center justify-between text-xs">
+                    <div class="font-bold uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-apogeeBlue"></i> Laser Machine Presets & Cut Parameters
+                    </div>
+                    <div class="text-slate-500 font-normal" id="laserCountText">Loading presets...</div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left font-sans text-xs">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 font-heading border-b border-slate-300 uppercase text-[11px] tracking-wider">
+                                <th class="p-3">Part/Component</th>
+                                <th class="p-3">Material & Thickness</th>
+                                <th class="p-3">Laser Machine</th>
+                                <th class="p-3 text-center">Power %</th>
+                                <th class="p-3 text-center">Speed %</th>
+                                <th class="p-3 text-center">Freq / PPI</th>
+                                <th class="p-3 text-center">Passes</th>
+                                <th class="p-3 text-center">Focus Offset</th>
+                                <th class="p-3 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="laserTableBody">
+                            <!-- Dynamically loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- LASER CALCULATOR HELPER -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="apogee-card p-4">
+                    <div class="text-xs font-heading font-bold text-apogeeBlue uppercase mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-calculator"></i> Speed / Power Ratio Scaling Tool
+                    </div>
+                    <p class="text-xs text-slate-600 mb-3">
+                        Adjust settings proportionally when transferring jobs between 60W, 75W, or 80W lasers.
+                    </p>
+                    <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
+                        <div>
+                            <label class="block text-slate-500 mb-1">Original Wattage</label>
+                            <input type="number" id="calcOrigWatt" value="60" class="w-full p-1.5 text-xs font-mono" />
+                        </div>
+                        <div>
+                            <label class="block text-slate-500 mb-1">Target Wattage</label>
+                            <input type="number" id="calcTargetWatt" value="75" class="w-full p-1.5 text-xs font-mono" />
+                        </div>
+                        <div>
+                            <label class="block text-slate-500 mb-1">Original Speed (%)</label>
+                            <input type="number" id="calcOrigSpeed" value="30" class="w-full p-1.5 text-xs font-mono" />
+                        </div>
+                        <div>
+                            <label class="block text-slate-500 mb-1">Original Power (%)</label>
+                            <input type="number" id="calcOrigPower" value="100" class="w-full p-1.5 text-xs font-mono" />
+                        </div>
+                    </div>
+                    <button onclick="calculateLaserRatio()" class="btn-apogee-secondary w-full py-1.5 font-bold text-xs rounded">
+                        Calculate Adjusted Parameters
+                    </button>
+                    <div id="calcResult" class="mt-3 p-2 bg-slate-50 rounded text-xs font-mono border border-slate-200 hidden">
+                        <!-- Result -->
+                    </div>
+                </div>
+
+                <div class="apogee-card p-4 flex flex-col justify-between">
+                    <div>
+                        <div class="text-xs font-heading font-bold text-apogeeBlue uppercase mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-triangle-exclamation text-apogeeYellow"></i> Safety & Operational Notes
+                        </div>
+                        <ul class="text-xs text-slate-600 space-y-1.5 list-disc pl-4">
+                            <li>Always verify air assist pressure before running balsa or thin aircraft plywood.</li>
+                            <li>Ensure exhaust suction fan is powered on to clear smoke and soot deposits.</li>
+                            <li>Balsa density varies; increase power by 5% if material is unusually dense.</li>
+                            <li>Clean focus lens with optics cleaner every 4 hours of active operation.</li>
+                        </ul>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-200 text-right">
+                        <button onclick="exportLaserSpecsCSV()" class="btn-apogee-secondary px-3 py-1.5 rounded text-xs font-bold">
+                            <i class="fa-solid fa-download text-apogeeBlue mr-1"></i> Export Laser Specs CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="w-full bg-slate-200 border-t border-slate-300 py-6 text-center space-y-2 mt-8">
+        <div class="text-[11px] md:text-xs text-slate-600 max-w-4xl mx-auto px-4 leading-relaxed font-sans">
+            Please be advised this unified portal is for private use within Apogee Components, Inc.
+        </div>
+        <div class="text-xs text-slate-500 font-bold">
+            Apogee Components, Inc. • Copyright © Travis B. 2014 - 2027
+        </div>
+    </footer>
+
+    <!-- MODAL FOR ADDING LASER PRESET -->
+    <div id="laserModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-lg shadow-2xl max-w-lg w-full overflow-hidden border border-slate-300">
+            <div class="apogee-card-header px-4 py-3 flex items-center justify-between">
+                <span class="font-bold text-xs uppercase text-apogeeBlue"><i class="fa-solid fa-plus-circle mr-1"></i> Add New Laser Cut Preset</span>
+                <button onclick="closeAddLaserModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-base"></i></button>
+            </div>
+            <div class="p-4 space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Part Code / Name</label>
+                    <input type="text" id="modalPart" placeholder="e.g. 10067 - Fin Set Centuri" class="w-full p-2" />
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Material</label>
+                        <input type="text" id="modalMaterial" placeholder="e.g. Balsa Wood" class="w-full p-2" />
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Thickness</label>
+                        <input type="text" id="modalThickness" placeholder="e.g. 3/32 in (2.4mm)" class="w-full p-2" />
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Laser Machine Model</label>
+                    <select id="modalMachine" class="w-full p-2">
+                        <option value="Epilog Fusion Pro 60W">Epilog Fusion Pro 60W</option>
+                        <option value="Universal ILS 75W">Universal ILS 75W</option>
+                        <option value="Trotec Speedy 300 80W">Trotec Speedy 300 80W</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-4 gap-2">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Power %</label>
+                        <input type="text" id="modalPower" placeholder="85" class="w-full p-2 font-mono text-center" />
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Speed %</label>
+                        <input type="text" id="modalSpeed" placeholder="40" class="w-full p-2 font-mono text-center" />
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Freq/PPI</label>
+                        <input type="text" id="modalFreq" placeholder="500 Hz" class="w-full p-2 font-mono text-center" />
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Passes</label>
+                        <input type="text" id="modalPasses" placeholder="1" class="w-full p-2 font-mono text-center" />
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Focus Offset / Notes</label>
+                    <input type="text" id="modalFocus" placeholder="e.g. +0.05 in or Std Lens" class="w-full p-2" />
+                </div>
+            </div>
+            <div class="p-3 bg-slate-100 flex items-center justify-end gap-2 border-t border-slate-200">
+                <button onclick="closeAddLaserModal()" class="btn-apogee-secondary px-3 py-1.5 rounded text-xs">Cancel</button>
+                <button onclick="saveLaserPreset()" class="btn-apogee-primary px-4 py-1.5 rounded text-xs font-bold">Save Preset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toastBanner" class="fixed bottom-5 right-5 z-40 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-slate-900 border border-slate-700 text-white px-4 py-2.5 rounded-lg shadow-2xl flex items-center gap-2.5 text-xs font-sans">
+            <i class="fa-solid fa-circle-check text-green-400 text-sm"></i>
+            <span id="toastMessage">Action completed successfully!</span>
+        </div>
+    </div>
+
+    <script>
+        // AUDIO SYNTHESIS & SOUND EFFECTS
+        let audioEnabled = true;
+        let apogeeSynth = null;
+
+        function initApogeeSynth() {
+            if (!apogeeSynth && typeof Tone !== 'undefined') {
+                try {
+                    apogeeSynth = new Tone.Synth({
+                        oscillator: { type: 'triangle' },
+                        envelope: { attack: 0.02, decay: 0.15, sustain: 0, release: 0.1 }
+                    }).toDestination();
+                } catch(e) {}
+            }
+        }
+
+        function playApogeeNote(note = 'C5') {
+            if (!audioEnabled) return;
+            try {
+                if (Tone && Tone.context.state !== 'running') {
+                    Tone.start();
+                }
+                initApogeeSynth();
+                if (apogeeSynth) {
+                    apogeeSynth.triggerAttackRelease(note, '16n');
+                }
+            } catch(e) {}
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const btn = document.getElementById('audioStatus');
+            const icon = document.getElementById('audioIcon');
+            if (audioEnabled) {
+                btn.textContent = 'AUDIO ON';
+                icon.className = 'fa-solid fa-volume-high text-apogeeYellow';
+                playApogeeNote('C5');
+            } else {
+                btn.textContent = 'AUDIO OFF';
+                icon.className = 'fa-solid fa-volume-xmark text-slate-400';
+            }
+        }
+
+        // STORAGE KEYS
+        const STORAGE_KEY_ITEMS = 'apogee_priority_items_v4';
+        const STORAGE_KEY_DATE = 'apogee_priority_date_v4';
+        const STORAGE_KEY_LASER = 'apogee_laser_presets_v1';
+
+        // APPLICATION STATE
+        let priorityState = {
+            date: new Date().toISOString().split('T')[0],
+            items: []
+        };
+
+        let laserPresets = [
+            { id: 'l1', part: '10067 - Centuri Fin Set', material: 'Balsa Wood', thickness: '1/8 in (3.2mm)', machine: 'Epilog Fusion Pro 60W', power: '85%', speed: '35%', freq: '500 Hz', passes: '1', focus: 'Standard' },
+            { id: 'l2', part: '10068 - Aerobee Centering Rings', material: 'Plywood', thickness: '1/16 in (1.6mm)', machine: 'Universal ILS 75W', power: '90%', speed: '40%', freq: '1000 Hz', passes: '1', focus: '+0.02 in' },
+            { id: 'l3', part: '10105 - Saturn V Transition Ring', material: 'Cardstock', thickness: '0.020 in', machine: 'Epilog Fusion Pro 60W', power: '30%', speed: '80%', freq: '250 Hz', passes: '1', focus: 'Standard' },
+            { id: 'l4', part: '10220 - Custom Clear Fins', material: 'Acrylic', thickness: '1/8 in (3.2mm)', machine: 'Trotec Speedy 300 80W', power: '100%', speed: '15%', freq: '5000 Hz', passes: '1', focus: '-0.01 in' },
+            { id: 'l5', part: '10340 - High Power Bulkhead', material: 'Fiberglass', thickness: '3/32 in (2.4mm)', machine: 'Universal ILS 75W', power: '100%', speed: '10%', freq: '2000 Hz', passes: '2', focus: 'Standard' }
+        ];
+
+        // NAVIGATION LOGIC
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+
+            const secQueue = document.getElementById('section-queue');
+            const secLaser = document.getElementById('section-laser');
+
+            if (tabName === 'queue') {
+                secQueue.classList.remove('hidden');
+                secLaser.classList.add('hidden');
+            } else if (tabName === 'laser') {
+                secQueue.classList.add('hidden');
+                secLaser.classList.remove('hidden');
+                renderLaserTable();
+            } else if (tabName === 'split') {
+                secQueue.classList.remove('hidden');
+                secLaser.classList.remove('hidden');
+                renderLaserTable();
+            }
+            playApogeeNote('E5');
+        }
+
+        // PRIORITY QUEUE LOGIC
+        function loadFromCache() {
+            try {
+                const savedDate = localStorage.getItem(STORAGE_KEY_DATE);
+                if (savedDate) priorityState.date = savedDate;
+
+                const savedItems = localStorage.getItem(STORAGE_KEY_ITEMS);
+                if (savedItems) priorityState.items = JSON.parse(savedItems);
+
+                const savedLaser = localStorage.getItem(STORAGE_KEY_LASER);
+                if (savedLaser) laserPresets = JSON.parse(savedLaser);
+            } catch(e) {}
+            
+            document.getElementById('priorityDateInput').value = priorityState.date;
+            renderPriorityTable();
+        }
+
+        function saveToCache() {
+            try {
+                localStorage.setItem(STORAGE_KEY_DATE, priorityState.date);
+                localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(priorityState.items));
+                localStorage.setItem(STORAGE_KEY_LASER, JSON.stringify(laserPresets));
+            } catch(e) {}
+        }
+
+        function updatePriorityDate(val) {
+            priorityState.date = val;
+            saveToCache();
+            playApogeeNote('E5');
+            showToast(`Schedule date updated to ${val}`);
+        }
+
+        function handleParseAndLoad() {
+            const rawText = document.getElementById('pasteInputArea').value;
+            if (!rawText.trim()) {
+                showToast('Please paste data into the textarea first.');
+                return;
+            }
+
+            const lines = rawText.trim().split('\n');
+            let addedCount = 0;
+
+            lines.forEach((line) => {
+                if (!line.trim()) return;
+
+                let cols = line.split('\t');
+                if (cols.length < 5) {
+                    cols = line.split(/\s{2,}/);
+                }
+
+                if (cols.length < 8) return;
+
+                const code = cols[0] ? cols[0].trim() : '';
+                const desc = cols[1] ? cols[1].trim() : '';
+
+                const upperCode = code.toUpperCase();
+                const upperDesc = desc.toUpperCase();
+                if (upperCode.includes('CODE') || upperDesc.includes('DESCRIPTION') || upperCode.includes('(DAYS)')) {
+                    return;
+                }
+
+                const avail = cols[5] ? cols[5].trim() : '0';
+                const max = cols[6] ? cols[6].trim() : '0';
+                const runQty = cols[7] ? cols[7].trim() : '0';
+
+                if (code) {
+                    priorityState.items.push({
+                        id: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                        code: code,
+                        description: desc,
+                        avail: avail,
+                        max: max,
+                        runQty: runQty,
+                        madeActual: '',
+                        badActual: '',
+                        completed: false
+                    });
+                    addedCount++;
+                }
+            });
+
+            if (addedCount > 0) {
+                saveToCache();
+                renderPriorityTable();
+                document.getElementById('pasteInputArea').value = '';
+                playApogeeNote('G5');
+                showToast(`Successfully loaded ${addedCount} priority item(s)!`);
+            } else {
+                showToast('Could not parse rows. Ensure tab-separated format.');
+            }
+        }
+
+        function handleManualAdd() {
+            const code = document.getElementById('manualCode').value.trim();
+            const runQty = document.getElementById('manualRunQty').value.trim();
+            const avail = document.getElementById('manualAvail').value.trim() || '0';
+            const max = document.getElementById('manualMax').value.trim() || '0';
+            const desc = document.getElementById('manualDesc').value.trim() || 'Manual Entry Item';
+
+            if (!code) {
+                showToast('Please enter at least a Parent Code.');
+                return;
+            }
+
+            priorityState.items.push({
+                id: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                code: code,
+                description: desc,
+                avail: avail,
+                max: max,
+                runQty: runQty || '0',
+                madeActual: '',
+                badActual: '',
+                completed: false
+            });
+
+            saveToCache();
+            renderPriorityTable();
+
+            document.getElementById('manualCode').value = '';
+            document.getElementById('manualRunQty').value = '';
+            document.getElementById('manualAvail').value = '';
+            document.getElementById('manualMax').value = '';
+            document.getElementById('manualDesc').value = '';
+
+            playApogeeNote('C5');
+            showToast(`Added item ${code} to priority queue.`);
+        }
+
+        function updateMadeActual(id, val) {
+            const item = priorityState.items.find(i => i.id === id);
+            if (item) {
+                item.madeActual = val;
+                saveToCache();
+            }
+        }
+
+        function updateBadActual(id, val) {
+            const item = priorityState.items.find(i => i.id === id);
+            if (item) {
+                item.badActual = val;
+                saveToCache();
+            }
+        }
+
+        function toggleItemComplete(id) {
+            const item = priorityState.items.find(i => i.id === id);
+            if (item) {
+                item.completed = !item.completed;
+                saveToCache();
+                renderPriorityTable();
+                if (item.completed) playApogeeNote('C6');
+            }
+        }
+
+        function deleteItem(id) {
+            priorityState.items = priorityState.items.filter(i => i.id !== id);
+            saveToCache();
+            renderPriorityTable();
+            playApogeeNote('A4');
+            showToast('Item removed from queue.');
+        }
+
+        function clearAllPriorities() {
+            if (priorityState.items.length === 0) return;
+            if (confirm('Clear all items from the priority list?')) {
+                priorityState.items = [];
+                saveToCache();
+                renderPriorityTable();
+                playApogeeNote('G4');
+                showToast('Priority list cleared.');
+            }
+        }
+
+        function copyQueueForGoogleSheets() {
+            if (priorityState.items.length === 0) {
+                showToast('No items in queue to copy.');
+                return;
+            }
+
+            const formattedRows = priorityState.items.map(item => {
+                return [
+                    item.code || '',
+                    item.description || '',
+                    '',
+                    '',
+                    '',
+                    item.avail || '',
+                    '',
+                    item.madeActual || '',
+                    item.badActual || ''
+                ].join('\t');
+            });
+
+            const copyText = formattedRows.join('\n');
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(copyText).then(() => {
+                    playApogeeNote('C6');
+                    showToast(`Copied ${priorityState.items.length} item(s) formatted for Google Sheets!`);
+                }).catch(() => fallbackCopy(copyText));
+            } else {
+                fallbackCopy(copyText);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            playApogeeNote('C6');
+            showToast(`Copied ${priorityState.items.length} item(s) formatted for Google Sheets!`);
+        }
+
+        function exportPriorityList() {
+            if (priorityState.items.length === 0) {
+                showToast('No items to export.');
+                return;
+            }
+            let csv = 'Part Number,Item#,Sheets,Material Used,Kanban Color,Available Stock # in MW,# In Box (before build),Qty Built,# Bad\n';
+            priorityState.items.forEach(i => {
+                csv += `"${i.code}","${i.description}","","","","${i.avail}","","${i.madeActual}","${i.badActual}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', `apogee_priority_list_${priorityState.date}.csv`);
+            a.click();
+            playApogeeNote('E5');
+            showToast('Priority list exported to CSV.');
+        }
+
+        function renderPriorityTable() {
+            const tbody = document.getElementById('priorityTableBody');
+            const items = priorityState.items;
+
+            document.getElementById('statTotal').textContent = items.length;
+            
+            let totalQty = 0;
+            items.forEach(i => {
+                if (!i.completed) {
+                    const num = parseInt(i.runQty, 10);
+                    if (!isNaN(num)) totalQty += num;
+                }
+            });
+            document.getElementById('statQty').textContent = totalQty;
+            document.getElementById('queueStatusText').textContent = `${items.length} total items in queue`;
+
+            if (items.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="p-8 text-center text-slate-400 font-sans italic">
+                            Queue is empty. Paste data above or add a manual item to begin.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = items.map(item => `
+                <tr class="priority-row ${item.completed ? 'completed' : ''}">
+                    <td class="p-3 text-center">
+                        <input type="checkbox" ${item.completed ? 'checked' : ''} onchange="toggleItemComplete('${item.id}')" class="cursor-pointer accent-apogeeBlue w-4 h-4" />
+                    </td>
+                    <td class="p-3 font-bold font-mono text-slate-800">${item.code}</td>
+                    <td class="p-3 priority-text text-slate-700 font-sans">${item.description}</td>
+                    <td class="p-3 text-center font-mono text-slate-600">${item.avail}</td>
+                    <td class="p-3 text-center font-mono text-slate-600">${item.max}</td>
+                    <td class="p-3 text-center font-bold font-mono text-apogeeRed text-sm">${item.runQty}</td>
+                    <td class="p-3 text-center">
+                        <input 
+                            type="text" 
+                            value="${item.madeActual || ''}" 
+                            oninput="updateMadeActual('${item.id}', this.value)" 
+                            placeholder="Qty" 
+                            class="w-20 bg-white border border-slate-300 focus:border-apogeeBlue text-apogeeBlue font-bold font-mono text-xs text-center px-2 py-1"
+                        />
+                    </td>
+                    <td class="p-3 text-center">
+                        <input 
+                            type="text" 
+                            value="${item.badActual || ''}" 
+                            oninput="updateBadActual('${item.id}', this.value)" 
+                            placeholder="Bad" 
+                            class="w-20 bg-white border border-slate-300 focus:border-red-500 text-red-600 font-bold font-mono text-xs text-center px-2 py-1"
+                        />
+                    </td>
+                    <td class="p-3 text-center">
+                        <button onclick="deleteItem('${item.id}')" class="text-slate-400 hover:text-red-600 p-1 transition" title="Remove item">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // LASER CUT DATABASE LOGIC
+        function renderLaserTable() {
+            const tbody = document.getElementById('laserTableBody');
+            const searchVal = document.getElementById('laserSearchInput').value.toLowerCase();
+            const matVal = document.getElementById('materialFilter').value;
+            const machVal = document.getElementById('machineFilter').value;
+
+            const filtered = laserPresets.filter(p => {
+                const matchesSearch = p.part.toLowerCase().includes(searchVal) || 
+                                     p.material.toLowerCase().includes(searchVal) ||
+                                     p.thickness.toLowerCase().includes(searchVal);
+                const matchesMat = matVal === 'ALL' || p.material === matVal;
+                const matchesMach = machVal === 'ALL' || p.machine === machVal;
+                return matchesSearch && matchesMat && matchesMach;
+            });
+
+            document.getElementById('laserCountText').textContent = `${filtered.length} presets showing`;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="p-8 text-center text-slate-400 italic">
+                            No laser cut presets found matching filter criteria.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(p => `
+                <tr class="priority-row">
+                    <td class="p-3 font-bold text-slate-800">${p.part}</td>
+                    <td class="p-3 text-slate-700">${p.material} (${p.thickness})</td>
+                    <td class="p-3 text-slate-600 font-mono text-[11px]">${p.machine}</td>
+                    <td class="p-3 text-center font-mono font-bold text-apogeeBlue">${p.power}</td>
+                    <td class="p-3 text-center font-mono font-bold text-slate-700">${p.speed}</td>
+                    <td class="p-3 text-center font-mono text-slate-600">${p.freq}</td>
+                    <td class="p-3 text-center font-mono text-slate-600">${p.passes}</td>
+                    <td class="p-3 text-center font-mono text-slate-600">${p.focus}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="copyLaserPreset('${p.id}')" class="text-apogeeBlue hover:text-apogeeBlueDark p-1 mr-2" title="Copy Specs">
+                            <i class="fa-solid fa-copy"></i>
+                        </button>
+                        <button onclick="deleteLaserPreset('${p.id}')" class="text-slate-400 hover:text-red-600 p-1" title="Delete">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterLaserSettings() {
+            renderLaserTable();
+        }
+
+        function openAddLaserModal() {
+            document.getElementById('laserModal').classList.remove('hidden');
+        }
+
+        function closeAddLaserModal() {
+            document.getElementById('laserModal').classList.add('hidden');
+        }
+
+        function saveLaserPreset() {
+            const part = document.getElementById('modalPart').value.trim();
+            const material = document.getElementById('modalMaterial').value.trim();
+            const thickness = document.getElementById('modalThickness').value.trim();
+            const machine = document.getElementById('modalMachine').value;
+            const power = document.getElementById('modalPower').value.trim() || '100%';
+            const speed = document.getElementById('modalSpeed').value.trim() || '30%';
+            const freq = document.getElementById('modalFreq').value.trim() || '500 Hz';
+            const passes = document.getElementById('modalPasses').value.trim() || '1';
+            const focus = document.getElementById('modalFocus').value.trim() || 'Standard';
+
+            if (!part || !material) {
+                showToast('Please fill out at least Part Name and Material.');
+                return;
+            }
+
+            const newPreset = {
+                id: 'l_' + Date.now(),
+                part, material, thickness, machine,
+                power: power.includes('%') ? power : power + '%',
+                speed: speed.includes('%') ? speed : speed + '%',
+                freq, passes, focus
+            };
+
+            laserPresets.push(newPreset);
+            saveToCache();
+            renderLaserTable();
+            closeAddLaserModal();
+            playApogeeNote('C6');
+            showToast(`Preset added for ${part}`);
+
+            // Clear inputs
+            document.getElementById('modalPart').value = '';
+            document.getElementById('modalMaterial').value = '';
+            document.getElementById('modalThickness').value = '';
+        }
+
+        function deleteLaserPreset(id) {
+            laserPresets = laserPresets.filter(p => p.id !== id);
+            saveToCache();
+            renderLaserTable();
+            playApogeeNote('A4');
+            showToast('Preset deleted.');
+        }
+
+        function copyLaserPreset(id) {
+            const p = laserPresets.find(x => x.id === id);
+            if (!p) return;
+            const text = `Part: ${p.part} | Material: ${p.material} (${p.thickness}) | Machine: ${p.machine} | Power: ${p.power} | Speed: ${p.speed} | Freq: ${p.freq} | Passes: ${p.passes}`;
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => showToast('Preset specs copied to clipboard!'));
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function calculateLaserRatio() {
+            const w1 = parseFloat(document.getElementById('calcOrigWatt').value) || 60;
+            const w2 = parseFloat(document.getElementById('calcTargetWatt').value) || 75;
+            const s1 = parseFloat(document.getElementById('calcOrigSpeed').value) || 30;
+            const p1 = parseFloat(document.getElementById('calcOrigPower').value) || 100;
+
+            const ratio = w2 / w1;
+            const adjSpeed = Math.min(100, Math.round(s1 * ratio));
+            const adjPower = Math.min(100, Math.round(p1 / ratio));
+
+            const resDiv = document.getElementById('calcResult');
+            resDiv.classList.remove('hidden');
+            resDiv.innerHTML = `
+                <strong>Estimated Scaling (${w1}W -> ${w2}W):</strong><br/>
+                • Maintain Power ${p1}% -> Increase Speed to <strong>${adjSpeed}%</strong><br/>
+                • Maintain Speed ${s1}% -> Adjust Power to <strong>${adjPower}%</strong>
+            `;
+            playApogeeNote('E5');
+        }
+
+        function exportLaserSpecsCSV() {
+            let csv = 'Part,Material,Thickness,Machine,Power,Speed,Frequency,Passes,Focus Offset\n';
+            laserPresets.forEach(p => {
+                csv += `"${p.part}","${p.material}","${p.thickness}","${p.machine}","${p.power}","${p.speed}","${p.freq}","${p.passes}","${p.focus}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', `apogee_laser_specs.csv`);
+            a.click();
+            playApogeeNote('G5');
+            showToast('Laser specs exported to CSV.');
+        }
+
+        let toastTimer = null;
+        function showToast(msg) {
+            const banner = document.getElementById('toastBanner');
+            document.getElementById('toastMessage').textContent = msg;
+            banner.classList.remove('translate-y-20', 'opacity-0');
+            banner.classList.add('translate-y-0', 'opacity-100');
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                banner.classList.add('translate-y-20', 'opacity-0');
+                banner.classList.remove('translate-y-0', 'opacity-100');
+            }, 2600);
+        }
+
+        window.onload = function () {
+            loadFromCache();
+            renderLaserTable();
+        };
+    </script>
+</body>
+</html>
