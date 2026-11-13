@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apogee Components - Production Hub & Laser Cut Settings</title>
+    <link rel="icon" type="image/svg+xml" href="https://apogeerockets.com/favicon.ico">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        apogeeBlue: '#005596',
+                        apogeeBlueDark: '#003d6d',
+                        apogeeBlueLight: '#1d74b9',
+                        apogeeRed: '#c8102e',
+                        apogeeRedDark: '#990011',
+                        apogeeYellow: '#ffcc00',
+                        apogeeGrayBg: '#f4f6f8',
+                        apogeePanelBg: '#ffffff',
+                        apogeeBorder: '#cbd5e1',
+                        apogeeHeaderBg: '#1e293b',
+                        apogeeRowHover: '#f0f7ff',
+                        apogeeSuccess: '#15803d'
+                    },
+                    fontFamily: {
+                        sans: ['Arial', 'Helvetica', 'sans-serif'],
+                        heading: ['Trebuchet MS', 'Arial', 'sans-serif'],
+                        mono: ['Courier New', 'Courier', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Tone.js for audio synthesis feedback -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f4f6f8;
+            color: #1f2937;
+        }
+
+        /* Header gradient imitating classic e-commerce banner */
+        .apogee-header {
+            background: linear-gradient(180deg, #005596 0%, #003d6d 100%);
+            border-bottom: 4px solid #c8102e;
+        }
+
+        .apogee-card {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .apogee-card-header {
+            background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+            border-bottom: 1px solid #cbd5e1;
+            color: #0f172a;
+            font-family: 'Trebuchet MS', Arial, sans-serif;
+            font-weight: bold;
+        }
+
+        .btn-apogee-primary {
+            background: linear-gradient(180deg, #005596 0%, #003d6d 100%);
+            color: white;
+            border: 1px solid #002b4d;
+        }
+        .btn-apogee-primary:hover {
+            background: linear-gradient(180deg, #1d74b9 0%, #005596 100%);
+        }
+
+        .btn-apogee-green {
+            background: linear-gradient(180deg, #16a34a 0%, #15803d 100%);
+            color: white;
+            border: 1px solid #14532d;
+        }
+        .btn-apogee-green:hover {
+            background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+        }
+
+        .btn-apogee-red {
+            background: linear-gradient(180deg, #c8102e 0%, #990011 100%);
+            color: white;
+            border: 1px solid #77000d;
+        }
+        .btn-apogee-red:hover {
+            background: linear-gradient(180deg, #e01e37 0%, #c8102e 100%);
+        }
+
+        .btn-apogee-secondary {
+            background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
+            color: #334155;
+            border: 1px solid #cbd5e1;
+        }
+        .btn-apogee-secondary:hover {
+            background: linear-gradient(180deg, #f1f5f9 0%, #cbd5e1 100%);
+        }
+
+        .priority-row {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background-color 0.15s ease;
+        }
+        .priority-row:hover {
+            background-color: #f0f7ff;
+        }
+        .priority-row.completed {
+            background-color: #f8fafc;
+            opacity: 0.65;
+        }
+        .priority-row.completed .priority-text {
+            text-decoration: line-through;
+            color: #64748b;
+        }
+
+        .cut-card {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.15s ease;
+        }
+        .cut-card:hover {
+            border-color: #005596;
+            box-shadow: 0 4px 12px rgba(0, 85, 150, 0.15);
+        }
+
+        /* Custom input styling */
+        input[type="text"], input[type="date"], textarea {
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+        }
+        input[type="text"]:focus, input[type="date"]:focus, textarea:focus {
+            outline: none;
+            border-color: #005596;
+            box-shadow: 0 0 0 2px rgba(0, 85, 150, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between select-none">
+    <!-- APOGEE BRANDED HEADER BAR -->
+    <header class="apogee-header text-white py-4 px-4 md:px-8 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-rocket text-apogeeYellow text-3xl"></i>
+                <div>
+                    <h1 class="font-heading text-2xl font-bold tracking-wider text-white uppercase leading-none">
+                        Apogee Components
+                    </h1>
+                    <p class="text-xs text-blue-200 tracking-wide uppercase font-semibold mt-1">
+                        Production Priority Queue, Order Tracking & Laser Settings
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="flex items-center space-x-2 text-xs font-mono bg-black/20 px-3 py-1.5 rounded border border-white/10">
+                    <i class="fa-solid fa-clock text-apogeeYellow"></i>
+                    <span id="sys-clock">00:00:00</span>
+                </div>
+                <div class="flex items-center space-x-2 text-xs font-mono bg-black/20 px-3 py-1.5 rounded border border-white/10">
+                    <i class="fa-solid fa-cloud text-apogeeYellow"></i>
+                    <span>STATUS: CACHED TO BROWSER STORAGE</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="w-full max-w-7xl mx-auto px-4 md:px-8 py-6 flex-grow">
+
+        <!-- SECTION 1: PRIORITY QUEUE TRACKER -->
+        <div class="mb-12">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b-2 border-apogeeBlue">
+                <h2 class="font-heading text-lg font-bold text-apogeeBlue uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-list-check"></i> Production Priority Queue
+                </h2>
+            </div>
+
+            <!-- HOW TO USE DROPDOWN -->
+            <div class="w-full mb-6">
+                <details class="apogee-card group">
+                    <summary class="apogee-card-header p-3.5 flex items-center justify-between cursor-pointer text-xs uppercase font-bold text-apogeeBlue hover:text-apogeeBlueDark transition select-none">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-circle-question text-apogeeBlue text-base"></i>
+                            <span>How to Use / Copy Data Instructions</span>
+                        </span>
+                        <i class="fa-solid fa-chevron-down transform group-open:rotate-180 transition-transform duration-200 text-slate-500"></i>
+                    </summary>
+                    <div class="p-4 border-t border-slate-200 bg-slate-50 flex flex-col items-center">
+                        <p class="text-xs text-slate-600 mb-3 font-sans max-w-2xl text-center">
+                            Select and copy rows directly from https://apogeerockets.com/docs/Priority_Build_Report.html / Priority Build Report table, then paste into the box below and click <strong>Parse & Load Data</strong>.
+                        </p>
+                        <div class="rounded overflow-hidden border border-slate-300 shadow-md max-w-4xl w-full">
+                            <img src="https://raw.githubusercontent.com/warehouse-sketch/production/main/webfiles/howtouse.gif" alt="How to copy and paste priority queue data" class="w-full h-auto block" />
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+            <!-- CONTROL BAR: DATE & ACTIONS -->
+            <div class="w-full mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Schedule Date -->
+                <div class="apogee-card p-3.5 flex items-center justify-between">
+                    <div class="text-xs font-bold font-heading text-slate-700 uppercase">
+                        <i class="fa-solid fa-calendar-days text-apogeeBlue mr-1"></i> Schedule Date:
+                    </div>
+                    <input 
+                        type="date" 
+                        id="priorityDateInput" 
+                        onchange="updatePriorityDate(this.value)" 
+                        class="bg-white text-slate-800 font-mono text-xs px-3 py-1.5 focus:outline-none"
+                    />
+                </div>
+
+                <!-- Stats & Quick Count -->
+                <div class="apogee-card p-3.5 flex items-center justify-between">
+                    <div class="text-xs font-heading font-bold text-slate-700">
+                        TOTAL ITEMS: <strong id="statTotal" class="text-apogeeBlue text-sm ml-1">0</strong>
+                    </div>
+                    <div class="text-xs font-heading font-bold text-slate-700">
+                        PENDING QTY: <strong id="statQty" class="text-apogeeRed text-sm ml-1">0</strong>
+                    </div>
+                </div>
+
+                <!-- Clear & Export Actions -->
+                <div class="apogee-card p-3.5 flex items-center justify-end gap-2 flex-wrap">
+                    <button onclick="copyQueueForGoogleSheets()" class="btn-apogee-green px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5" title="Copy queue formatted for Google Sheets">
+                        <i class="fa-solid fa-copy"></i> Copy to Sheets
+                    </button>
+                    <button onclick="clearAllPriorities()" class="btn-apogee-red px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-trash-can"></i> Clear List
+                    </button>
+                    <button onclick="exportPriorityList()" class="btn-apogee-secondary px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-file-csv text-apogeeBlue"></i> CSV
+                    </button>
+                </div>
+            </div>
+
+            <!-- INPUT SECTION: BULK PASTE & MANUAL ENTRY (SIDE-BY-SIDE 2-COLUMN GRID) -->
+            <div class="w-full mb-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <!-- Bulk Paste Box -->
+                <div class="apogee-card p-4 flex flex-col justify-between">
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-xs font-heading font-bold mb-2">
+                            <span class="text-apogeeBlue uppercase"><i class="fa-solid fa-paste mr-1"></i> Paste Priority Data (Tab-Separated)</span>
+                        </div>
+                        <textarea 
+                            id="pasteInputArea" 
+                            rows="4" 
+                            placeholder="Paste copied Priority Build Report / inventory rows here..."
+                            class="w-full bg-slate-50 p-2.5 text-xs font-mono text-slate-800 placeholder-slate-400 resize-y"
+                        ></textarea>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-100 mt-3">
+                        <div class="text-[11px] text-slate-500 font-sans">
+                            Auto-extracts Parent Code, Desc, Avail, Max, Run Qty.
+                        </div>
+                        <button onclick="handleParseAndLoad()" class="btn-apogee-primary px-4 py-2 font-bold text-xs rounded shadow transition active:scale-95 flex items-center gap-2">
+                            <i class="fa-solid fa-bolt text-apogeeYellow"></i>
+                            <span>Parse & Load Data</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Manual Single Item Entry Box -->
+                <div class="apogee-card p-4 flex flex-col justify-between">
+                    <div>
+                        <div class="text-xs font-heading font-bold text-apogeeBlue uppercase mb-2">
+                            <i class="fa-solid fa-circle-plus mr-1"></i> Manual Item Entry
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <input type="text" id="manualCode" placeholder="Code (e.g. 10067)" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                            <input type="text" id="manualRunQty" placeholder="Run Qty" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <input type="text" id="manualAvail" placeholder="Avail" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                            <input type="text" id="manualMax" placeholder="Max" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                        </div>
+                        <input type="text" id="manualDesc" placeholder="Description" class="w-full bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800 mb-2" />
+                    </div>
+                    <button onclick="handleManualAdd()" class="btn-apogee-secondary w-full py-2 font-bold text-xs rounded transition active:scale-95 flex items-center justify-center gap-1.5 border-slate-300 mt-2">
+                        <i class="fa-solid fa-plus text-apogeeBlue"></i> Add Item to Queue
+                    </button>
+                </div>
+            </div>
+
+            <!-- TABLE DISPLAY SECTION -->
+            <div class="w-full">
+                <div class="apogee-card overflow-hidden">
+                    <div class="apogee-card-header px-4 py-3 flex items-center justify-between text-xs">
+                        <div class="font-bold uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-apogeeBlue"></i> Active Priority Queue
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button onclick="copyQueueForGoogleSheets()" class="btn-apogee-green px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-copy"></i> Copy Active Queue for Google Sheets
+                            </button>
+                            <div class="text-slate-500 font-normal" id="queueStatusText">0 items loaded</div>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left font-sans text-xs">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-700 font-heading border-b border-slate-300 uppercase text-[11px] tracking-wider">
+                                    <th class="p-3 w-10 text-center">✓</th>
+                                    <th class="p-3">Parent Code</th>
+                                    <th class="p-3">Description</th>
+                                    <th class="p-3 text-center">Avail</th>
+                                    <th class="p-3 text-center">Max</th>
+                                    <th class="p-3 text-center text-apogeeRed font-bold">Priority Run Qty</th>
+                                    <th class="p-3 text-center text-amber-600 font-bold w-24">In Box</th>
+                                    <th class="p-3 text-center text-apogeeBlue font-bold w-24">Made Actual</th>
+                                    <th class="p-3 text-center text-red-600 font-bold w-24">Bad</th>
+                                    <th class="p-3 text-center text-emerald-600 font-bold w-28">Time Taken</th>
+                                    <th class="p-3 text-center w-16">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="priorityTableBody">
+                                <!-- Populated dynamically via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2: LASER CUT SETTINGS & SPECIFICATIONS ARCHIVE -->
+        <div class="mb-12">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b-2 border-apogeeBlue">
+                <h2 class="font-heading text-lg font-bold text-apogeeBlue uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-laser-pointer"></i> Laser Cutter Parameters & Specification Archive
+                </h2>
+            </div>
+
+            <!-- SEARCH & TELEMETRY HEADER BAR -->
+            <div class="w-full mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="apogee-card p-3.5 md:col-span-2 flex items-center gap-3">
+                    <div class="text-apogeeBlue pl-1 text-lg">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        oninput="handleSearch(this.value)" 
+                        placeholder="Search materials, part numbers..." 
+                        class="w-full bg-white text-slate-800 font-sans text-xs placeholder-slate-400 focus:outline-none"
+                    />
+                    <button onclick="clearSearch()" class="btn-apogee-secondary px-3 py-1 text-xs font-bold rounded">
+                        Clear
+                    </button>
+                </div>
+
+                <div class="apogee-card p-3.5 flex items-center justify-between">
+                    <span id="searchStatus" class="font-heading font-bold text-xs text-apogeeBlue uppercase">// SHOWING SPECS</span>
+                    <span class="text-xs text-slate-500 font-mono font-bold">DATABASE v4.0</span>
+                </div>
+            </div>
+
+            <!-- CATEGORY FILTER PILLS -->
+            <div class="w-full flex items-center gap-2 overflow-x-auto pb-4 mb-4">
+                <button onclick="setCategory('ALL')" id="cat-ALL" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-primary shadow">ALL</button>
+                <button onclick="setCategory('PLYWOOD')" id="cat-PLYWOOD" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">PLYWOOD</button>
+                <button onclick="setCategory('BALSA')" id="cat-BALSA" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">BALSA</button>
+                <button onclick="setCategory('AT')" id="cat-AT" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">AT TUBES</button>
+                <button onclick="setCategory('AC')" id="cat-AC" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">AC COUPLERS</button>
+                <button onclick="setCategory('VAC-FORM')" id="cat-VAC-FORM" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">VAC-FORM</button>
+                <button onclick="setCategory('BASSWOOD')" id="cat-BASSWOOD" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">BASSWOOD</button>
+                <button onclick="setCategory('CARDBOARD')" id="cat-CARDBOARD" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">CARDBOARD</button>
+                <button onclick="setCategory('ACRYLIC')" id="cat-ACRYLIC" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">ACRYLIC</button>
+                <button onclick="setCategory('FOAM')" id="cat-FOAM" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">FOAM</button>
+            </div>
+
+            <!-- CUT SPECS GRID -->
+            <div id="cutsGrid" class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Populated via JavaScript -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="w-full bg-slate-200 border-t border-slate-300 py-6 text-center space-y-2">
+        <div class="text-[11px] md:text-xs text-slate-600 max-w-4xl mx-auto px-4 leading-relaxed font-sans">
+            Please be advised this is for private use within Apogee Components, developed for use in the warehouse by Travis.
+        </div>
+        <div class="text-xs text-slate-500 font-bold">
+            Apogee Components, Inc. • Copyright © Travis B. 2014 - 2027
+        </div>
+    </footer>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toastBanner" class="fixed bottom-5 right-5 z-40 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-slate-900 border border-slate-700 text-white px-4 py-2.5 rounded-lg shadow-2xl flex items-center gap-2.5 text-xs font-sans">
+            <i class="fa-solid fa-circle-check text-green-400 text-sm"></i>
+            <span id="toastMessage">Action completed successfully!</span>
+        </div>
+    </div>
+
+    <!-- SCRIPT LOGIC -->
+    <script>
+        // System Clock
+        setInterval(() => {
+            const now = new Date();
+            const clockEl = document.getElementById('sys-clock');
+            if(clockEl) clockEl.innerText = now.toTimeString().split(' ')[0];
+        }, 1000);
+
+        // Audio Synthesis
+        let audioEnabled = true;
+        let apogeeSynth = null;
+        function initApogeeSynth() {
+            if (!apogeeSynth) {
+                apogeeSynth = new Tone.Synth({
+                    oscillator: { type: 'triangle' },
+                    envelope: { attack: 0.02, decay: 0.15, sustain: 0, release: 0.1 }
+                }).toDestination();
+            }
+        }
+        function playApogeeNote(note = 'C5') {
+            if (!audioEnabled) return;
+            try {
+                Tone.start();
+                initApogeeSynth();
+                apogeeSynth.triggerAttackRelease(note, '16n');
+            } catch(e) {}
+        }
+
+        /* ----------------------------------------------------
+           PRIORITY QUEUE LOGIC
+        ---------------------------------------------------- */
+        const STORAGE_KEY_ITEMS = 'apogee_priority_items_v4';
+        const STORAGE_KEY_DATE = 'apogee_priority_date_v4';
+
+        let priorityState = {
+            date: new Date().toISOString().split('T')[0],
+            items: []
+        };
+
+        function loadFromCache() {
+            try {
+                const savedDate = localStorage.getItem(STORAGE_KEY_DATE);
+                if (savedDate) priorityState.date = savedDate;
+
+                const savedItems = localStorage.getItem(STORAGE_KEY_ITEMS);
+                if (savedItems) {
+                    priorityState.items = JSON.parse(savedItems);
+                }
+            } catch(e) {}
+            
+            document.getElementById('priorityDateInput').value = priorityState.date;
+            renderPriorityTable();
+        }
+
+        function saveToCache() {
+            try {
+                localStorage.setItem(STORAGE_KEY_DATE, priorityState.date);
+                localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(priorityState.items));
+            } catch(e) {}
+        }
+
+        function updatePriorityDate(val) {
+            priorityState.date = val;
+            saveToCache();
+            playApogeeNote('E5');
+            showToast(`Schedule date updated to ${val}`);
+        }
+
+        function handleParseAndLoad() {
+            const rawText = document.getElementById('pasteInputArea').value;
+            if (!rawText.trim()) {
+                showToast('Please paste data into the textarea first.');
+                return;
+            }
+
+            const lines = rawText.trim().split('\n');
+            let addedCount = 0;
+
+            lines.forEach((line) => {
+                if (!line.trim()) return;
+
+                let cols = line.split('\t');
+                if (cols.length < 5) {
+                    cols = line.split(/\s{2,}/);
+                }
+
+                if (cols.length < 8) return;
+
+                const code = cols[0] ? cols[0].trim() : '';
+                const desc = cols[1] ? cols[1].trim() : '';
+
+                const upperCode = code.toUpperCase();
+                const upperDesc = desc.toUpperCase();
+                if (upperCode.includes('CODE') || upperDesc.includes('DESCRIPTION') || upperCode.includes('(DAYS)')) {
+                    return;
+                }
+
+                const avail = cols[5] ? cols[5].trim() : '0';
+                const max = cols[6] ? cols[6].trim() : '0';
+                const runQty = cols[7] ? cols[7].trim() : '0';
+
+                if (code) {
+                    priorityState.items.push({
+                        id: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                        code: code,
+                        description: desc,
+                        avail: avail,
+                        max: max,
+                        runQty: runQty,
+                        inBox: '',
+                        madeActual: '',
+                        badActual: '',
+                        timeTaken: '',
+                        completed: false
+                    });
+                    addedCount++;
+                }
+            });
+
+            if (addedCount > 0) {
+                saveToCache();
+                renderPriorityTable();
+                document.getElementById('pasteInputArea').value = '';
+                playApogeeNote('G5');
+                showToast(`Successfully loaded ${addedCount} priority item(s)!`);
+            } else {
+                showToast('Could not parse rows. Ensure tab-separated format.');
+            }
+        }
+
+        function handleManualAdd() {
+            const code = document.getElementById('manualCode').value.trim();
+            const runQty = document.getElementById('manualRunQty').value.trim();
+            const avail = document.getElementById('manualAvail').value.trim() || '0';
+            const max = document.getElementById('manualMax').value.trim() || '0';
+            const desc = document.getElementById('manualDesc').value.trim() || 'Manual Entry Item';
+
+            if (!code) {
+                showToast('Please enter at least a Parent Code.');
+                return;
+            }
+
+            priorityState.items.push({
+                id: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                code: code,
+                description: desc,
+                avail: avail,
+                max: max,
+                runQty: runQty || '0',
+                inBox: '',
+                madeActual: '',
+                badActual: '',
+                timeTaken: '',
+                completed: false
+            });
+
+            saveToCache();
+            renderPriorityTable();
+
+            document.getElementById('manualCode').value = '';
+            document.getElementById('manualRunQty').value = '';
+            document.getElementById('manualAvail').value = '';
+            document.getElementById('manualMax').value = '';
+            document.getElementById('manualDesc').value = '';
+
+            playApogeeNote('C5');
+            showToast(`Added item ${code} to priority queue.`);
+        }
+
+        function updateInBox(id, val) {
+            const item = priorityState.items.find(i => i.id === id);
+            if (item) {
+                item.inBox = val;
+                saveToCache();
+            }
+        }
+
+        function updateMadeActual(id, val) {
+            const item = priorityState.items.find(i => i.id === id);
+            if (item) {
+                item.madeActual = val;
+                saveToCache();
+            }
+        }
+
+        function updateBadActual(id, val) {
+            const item = priorityState.items.find(i => i.id === id);
+            if (item) {
+                item.badActual = val;
+                saveToCache();
+            }
+        }
+
+        function updateTimeTaken(id, val) {
+            const item = priorityState.items.find(i => i.id === id);
+            if (item) {
+                item.timeTaken = val;
+                saveToCache();
+            }
+        }
+
+        function toggleItemComplete(id) {
+            const item = priorityState.items.find(i => i.id === id);
+            if (item) {
+                item.completed = !item.completed;
+                saveToCache();
+                renderPriorityTable();
+                if (item.completed) playApogeeNote('C6');
+            }
+        }
+
+        function deleteItem(id) {
+            priorityState.items = priorityState.items.filter(i => i.id !== id);
+            saveToCache();
+            renderPriorityTable();
+            playApogeeNote('A4');
+            showToast('Item removed from queue.');
+        }
+
+        function clearAllPriorities() {
+            if (priorityState.items.length === 0) return;
+            if (confirm('Clear all items from the priority list?')) {
+                priorityState.items = [];
+                saveToCache();
+                renderPriorityTable();
+                playApogeeNote('G4');
+                showToast('Priority list cleared.');
+            }
+        }
+
+        function renderPriorityTable() {
+            const tbody = document.getElementById('priorityTableBody');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+
+            let totalQty = 0;
+
+            priorityState.items.forEach(item => {
+                const runVal = parseInt(item.runQty) || 0;
+                totalQty += runVal;
+
+                const tr = document.createElement('tr');
+                tr.className = `priority-row ${item.completed ? 'completed' : ''}`;
+
+                tr.innerHTML = `
+                    <td class="p-3 text-center">
+                        <input 
+                            type="checkbox" 
+                            ${item.completed ? 'checked' : ''} 
+                            onchange="toggleItemComplete('${item.id}')"
+                            class="rounded border-slate-300 text-apogeeBlue focus:ring-apogeeBlue cursor-pointer w-4 h-4"
+                        />
+                    </td>
+                    <td class="p-3 font-mono font-bold text-slate-800 priority-text">${item.code}</td>
+                    <td class="p-3 font-medium text-slate-700 priority-text">${item.description}</td>
+                    <td class="p-3 text-center font-mono text-slate-600">${item.avail}</td>
+                    <td class="p-3 text-center font-mono text-slate-600">${item.max}</td>
+                    <td class="p-3 text-center font-mono font-bold text-apogeeRed">${item.runQty}</td>
+                    <td class="p-3 text-center">
+                        <input 
+                            type="text" 
+                            value="${item.inBox || ''}" 
+                            placeholder="In Box"
+                            oninput="updateInBox('${item.id}', this.value)"
+                            class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border border-slate-300 rounded focus:border-amber-500 focus:outline-none"
+                        />
+                    </td>
+                    <td class="p-3 text-center">
+                        <input 
+                            type="text" 
+                            value="${item.madeActual || ''}" 
+                            placeholder="Made"
+                            oninput="updateMadeActual('${item.id}', this.value)"
+                            class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border border-slate-300 rounded focus:border-apogeeBlue focus:outline-none"
+                        />
+                    </td>
+                    <td class="p-3 text-center">
+                        <input 
+                            type="text" 
+                            value="${item.badActual || ''}" 
+                            placeholder="Bad"
+                            oninput="updateBadActual('${item.id}', this.value)"
+                            class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border border-slate-300 rounded focus:border-red-500 focus:outline-none"
+                        />
+                    </td>
+                    <td class="p-3 text-center">
+                        <input 
+                            type="text" 
+                            value="${item.timeTaken || ''}" 
+                            placeholder="Time Taken"
+                            oninput="updateTimeTaken('${item.id}', this.value)"
+                            class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border border-slate-300 rounded focus:border-emerald-500 focus:outline-none"
+                        />
+                    </td>
+                    <td class="p-3 text-center">
+                        <button onclick="deleteItem('${item.id}')" class="text-slate-400 hover:text-apogeeRed transition p-1">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('statTotal').innerText = priorityState.items.length;
+            document.getElementById('statQty').innerText = totalQty;
+            document.getElementById('queueStatusText').innerText = `${priorityState.items.length} items loaded`;
+        }
+
+        function copyQueueForGoogleSheets() {
+            if (priorityState.items.length === 0) {
+                showToast('No items in queue to copy.');
+                return;
+            }
+
+            const formattedRows = priorityState.items.map(item => {
+                const partNumber = item.code || '';
+                const itemDesc = item.description || '';
+                const sheets = '';
+                const materialUsed = '';
+                const kanbanColor = '';
+                const availStock = item.avail || '';
+                const inBoxBeforeBuild = item.inBox || '';
+                const qtyBuilt = item.madeActual || '';
+                const badQty = item.badActual || '';
+                const totalOH = '';
+                const timeTaken = item.timeTaken || '';
+
+                return [
+                    partNumber,
+                    itemDesc,
+                    sheets,
+                    materialUsed,
+                    kanbanColor,
+                    availStock,
+                    inBoxBeforeBuild,
+                    qtyBuilt,
+                    badQty,
+                    totalOH,
+                    timeTaken
+                ].join('\t');
+            });
+
+            const copyText = formattedRows.join('\n');
+
+            navigator.clipboard.writeText(copyText).then(() => {
+                playApogeeNote('C6');
+                showToast(`Copied ${priorityState.items.length} item(s) formatted for Google Sheets!`);
+            }).catch(err => {
+                const textArea = document.createElement('textarea');
+                textArea.value = copyText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                playApogeeNote('C6');
+                showToast(`Copied ${priorityState.items.length} item(s) formatted for Google Sheets!`);
+            });
+        }
+
+        function exportPriorityList() {
+            if (priorityState.items.length === 0) {
+                showToast('No items to export.');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Parent Code,Description,Avail,Max,Priority Run Qty,In Box,Made Actual,Bad,Time Taken,Completed\n";
+
+            priorityState.items.forEach(item => {
+                const row = [
+                    `"${item.code}"`,
+                    `"${item.description.replace(/"/g, '""')}"`,
+                    `"${item.avail}"`,
+                    `"${item.max}"`,
+                    `"${item.runQty}"`,
+                    `"${item.inBox || ''}"`,
+                    `"${item.madeActual || ''}"`,
+                    `"${item.badActual || ''}"`,
+                    `"${item.timeTaken || ''}"`,
+                    `"${item.completed ? 'YES' : 'NO'}"`
+                ].join(",");
+                csvContent += row + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Apogee_Priority_Queue_${priorityState.date}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            playApogeeNote('E5');
+            showToast('Exported priority queue CSV file.');
+        }
+
+        /* ----------------------------------------------------
+           LASER CUT SETTINGS LOGIC
+        ---------------------------------------------------- */
+        const cutsData = [
+            { name: "1/32\" Plywood", pn: "14110", diameter: "N/A", class: "PLYWOOD", cut: { freq: 50, spd: 30, pwr: 32 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 5 }] },
+            { name: "1/16\" Plywood", pn: "14112", diameter: "N/A", class: "PLYWOOD", cut: { freq: 65, spd: 26, pwr: 85 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 26, pwr: 8 }, { type: "Raster", freq: "-", spd: 100, pwr: 40 }] },
+            { name: "1/8\" Plywood", pn: "40210", diameter: "N/A", class: "PLYWOOD", cut: { freq: 35, spd: 20, pwr: 100 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 100, pwr: 30 }, { type: "Raster", freq: "-", spd: 100, pwr: 35 }] },
+            { name: "1/4\" Plywood Single Cut", pn: "40212", diameter: "N/A", class: "PLYWOOD", cut: { freq: 35, spd: "10-11", pwr: 100 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 100, pwr: 15 }, { type: "Raster", freq: 50, spd: 100, pwr: 30 }] },
+            { name: "1/4\" Plywood Dual Cut", pn: "40212", diameter: "N/A", class: "PLYWOOD", cut: { freq: 65, spd: "10-17", pwr: 100 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 100, pwr: 15 }, { type: "Raster", freq: 50, spd: 100, pwr: 30 }] },
+            { name: "1/32\" Balsa", pn: "14105", diameter: "N/A", class: "BALSA", cut: { freq: 50, spd: 45, pwr: 15 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 3 }] },
+            { name: "1/16\" Balsa", pn: "14103", diameter: "N/A", class: "BALSA", cut: [{ type: "Cut (Hardwood)", freq: 50, spd: 45, pwr: 22 }, { type: "Cut (Softwood)", freq: 50, spd: 50, pwr: 16 }], engrave: [{ type: "Engrave / Raster", freq: 50, spd: 26, pwr: 3 }] },
+            { name: "3/32\" Balsa", pn: "14104", diameter: "N/A", class: "BALSA", cut: { freq: 50, spd: 50, pwr: 22 }, engrave: [] },
+            { name: "1/8\" Balsa", pn: "14102 / 14107", diameter: "N/A", class: "BALSA", cut: [{ type: "Cut (Hardwood)", freq: 50, spd: 30, pwr: 45 }, { type: "Cut (Softwood)", freq: 50, spd: 35, pwr: 40 }], engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 3 }, { type: "Raster", freq: "-", spd: 26, pwr: 12 }] },
+            { name: "3/16\" Balsa", pn: "14106", diameter: "N/A", class: "BALSA", cut: { freq: 50, spd: 50, pwr: 80 }, engrave: [{ type: "Engrave / Raster", freq: 0, spd: 0, pwr: 0 }] },
+            { name: "1/4\" Balsa", pn: "14109", diameter: "N/A", class: "BALSA", cut: { freq: 50, spd: 25, pwr: 80 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 26, pwr: 6 }] },
+            { name: "Foam Board / Foam Core", pn: "N/A", diameter: "N/A", class: "FOAM", cut: { freq: "-", spd: 100, pwr: 25 }, engrave: [{ type: "Engrave / Raster", freq: "-", spd: 12, pwr: 5 }] },
+            { name: "AT-13/18\"", pn: "10062", diameter: "OD: 0.544\" | ID (AC-13): 0.518\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 5 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 100, pwr: 2 }] },
+            { name: "AT-18/18\"", pn: "10085", diameter: "OD: 0.736\" | ID (AC-18): 0.710\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 5 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 2 }] },
+            { name: "AT-24/18\"", pn: "10089", diameter: "OD: 0.976\" | ID (AC-24): 0.950\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 7 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 1 }] },
+            { name: "AT-24/6\" Clear", pn: "10101", diameter: "OD: 0.976\" | ID (AC-24): 0.950\"", class: "AT", cut: { freq: "-", spd: 37, pwr: 15 }, engrave: [] },
+            { name: "AT-29/13\"", pn: "10110", diameter: "OD: 1.176\" | ID (AC-29): 1.140\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 7 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 1 }] },
+            { name: "AT-29/7\" Thick Wall", pn: "10250", diameter: "OD: 1.176\" | ID (AC-29): 1.140\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 10 }, engrave: [] },
+            { name: "AT-33/18\"", pn: "10130", diameter: "OD: 1.325\" | ID (AC-33): 1.283\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 6 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 1 }] },
+            { name: "AT-41.6/18\"", pn: "10140", diameter: "OD: 1.637\" | ID (AC-41.6): 1.595\"", class: "AT", cut: { freq: 50, spd: 45, pwr: 10 }, engrave: [] },
+            { name: "AT-56/18", pn: "10160", diameter: "OD: 2.217\" | ID (AC-56): 2.180\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 9 }, engrave: [] },
+            { name: "AT-66/18\"", pn: "10197", diameter: "OD: 2.600\" | ID (AC-66): 2.558\"", class: "AT", cut: { freq: 50, spd: 60, pwr: 12 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 60, pwr: 3 }] },
+            { name: "AT-74/18\"", pn: "10201", diameter: "OD: 2.990\" | ID (AC-74): 2.945\"", class: "AT", cut: { freq: 50, spd: 70, pwr: 30 }, engrave: [] },
+            { name: "AT-98/18\" (4\")", pn: "10218", diameter: "OD: 3.990\" | ID (AC-98): N/A", class: "AT", cut: { freq: 50, spd: 40, pwr: 20 }, engrave: [] },
+            { name: "AC-13 Coupler", pn: "13012", diameter: "ID: 0.518\" | OD: 0.544\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 5 }, engrave: [] },
+            { name: "AC-18 Coupler", pn: "13013", diameter: "ID: 0.710\" | OD: 0.736\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 9 }, engrave: [] },
+            { name: "AC-24 Coupler", pn: "13007", diameter: "ID: 0.950\" | OD: 0.976\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 7 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 2 }] },
+            { name: "AC-33 Coupler", pn: "13016", diameter: "ID: 1.283\" | OD: 1.325\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 7 }, engrave: [] },
+            { name: "AC-41.6 / BT-60 Coupler", pn: "13018", diameter: "ID: 1.595\" | OD: 1.637\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 7 }, engrave: [] },
+            { name: "AC-56 / BT-70 Coupler", pn: "13042", diameter: "ID: 2.180\" | OD: 2.217\"", class: "AC", cut: { freq: 50, spd: 45, pwr: 12 }, engrave: [] },
+            { name: "AC-66 / BT-80 Coupler", pn: "13044", diameter: "ID: 2.558\" | OD: 2.600\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 12 }, engrave: [] },
+            { name: "AC-74 / 3\" Coupler", pn: "13046", diameter: "ID: 2.945\" | OD: 2.990\"", class: "AC", cut: { freq: 50, spd: 50, pwr: 24 }, engrave: [{ type: "Engrave / Raster", freq: "-", spd: 60, pwr: 3 }] },
+            { name: "Vac-Form .01", pn: "30001", diameter: "N/A", class: "VAC-FORM", cut: { freq: 50, spd: 60, pwr: 5 }, engrave: [] },
+            { name: "Vac-Form .02", pn: "30002", diameter: "N/A", class: "VAC-FORM", cut: { freq: 50, spd: 37, pwr: 3 }, engrave: [] },
+            { name: "Vac-Form .03", pn: "30003", diameter: "N/A", class: "VAC-FORM", cut: { freq: 50, spd: 100, pwr: 7 }, engrave: [] },
+            { name: "Vac-Form .03 Clear", pn: "13007", diameter: "N/A", class: "VAC-FORM", cut: { freq: 50, spd: 90, pwr: 10 }, engrave: [] },
+            { name: "Vac-Form .06", pn: "13016", diameter: "N/A", class: "VAC-FORM", cut: { freq: 50, spd: 90, pwr: 18 }, engrave: [] },
+            { name: "Acrylic", pn: "40218", diameter: "N/A", class: "ACRYLIC", cut: { freq: 50, spd: 10, pwr: 60 }, engrave: [] },
+            { name: "Cardstock", pn: "44000 / 44001", diameter: "OD: 0.976\" | ID: 0.950\"", class: "CARDBOARD", cut: { freq: 40, spd: 30, pwr: 40 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 40, pwr: 8 }] },
+            { name: "Basswood 3/32\"", pn: "14123", diameter: "N/A", class: "BASSWOOD", cut: { freq: 50, spd: 30, pwr: 85 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 40, pwr: 5 }] },
+            { name: "Basswood 1/8\"", pn: "14121", diameter: "N/A", class: "BASSWOOD", cut: { freq: 50, spd: 25, pwr: 85 }, engrave: [] },
+            { name: "Corrugated Cardboard", pn: "44007", diameter: "N/A", class: "CARDBOARD", cut: { freq: 50, spd: 35, pwr: 50 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 50, pwr: 8 }] },
+            { name: "10.5mm Tube", pn: "N/A", diameter: "OD: 0.466\" | ID: 0.422\"", class: "AT", cut: null, engrave: [], note: "SETTINGS NOT SPECIFIED" },
+            { name: "98mm / 4\" Tube", pn: "N/A", diameter: "OD: 3.990\" | ID: N/A", class: "AT", cut: { freq: 50, spd: 40, pwr: 20 }, engrave: [] }
+        ];
+
+        let selectedCategory = 'ALL';
+        let currentSearchQuery = '';
+
+        function setCategory(cat) {
+            selectedCategory = cat;
+            const buttons = document.querySelectorAll('[id^="cat-"]');
+            buttons.forEach(btn => {
+                if (btn.id === `cat-${cat}`) {
+                    btn.className = 'px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-primary shadow';
+                } else {
+                    btn.className = 'px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary';
+                }
+            });
+            renderCutGrid();
+            playApogeeNote('D5');
+        }
+
+        function handleSearch(query) {
+            currentSearchQuery = query.toLowerCase().trim();
+            renderCutGrid();
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            currentSearchQuery = '';
+            renderCutGrid();
+            playApogeeNote('C5');
+        }
+
+        function buildParamRowHtml(title, spd, pwr, freq) {
+            return `
+                <div class="mb-2">
+                    ${title ? `<div class="text-[10px] font-bold text-slate-500 uppercase mb-1 font-sans">${title}</div>` : ''}
+                    <div class="grid grid-cols-3 gap-1.5 bg-slate-50 p-2 rounded border border-slate-200 text-center font-mono text-xs">
+                        <div>
+                            <div class="text-[9px] text-slate-400 uppercase font-sans">Speed</div>
+                            <div class="font-bold text-slate-800">${spd !== undefined ? spd : '-'}</div>
+                        </div>
+                        <div>
+                            <div class="text-[9px] text-slate-400 uppercase font-sans">Power</div>
+                            <div class="font-bold text-slate-800">${pwr !== undefined ? pwr : '-'}</div>
+                        </div>
+                        <div>
+                            <div class="text-[9px] text-slate-400 uppercase font-sans">Freq</div>
+                            <div class="font-bold text-slate-800">${freq !== undefined ? freq : '-'}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCutGrid() {
+            const grid = document.getElementById('cutsGrid');
+            if (!grid) return;
+
+            grid.innerHTML = '';
+
+            const filtered = cutsData.filter(item => {
+                const matchesCat = (selectedCategory === 'ALL') || (item.class === selectedCategory);
+                const matchesQuery = !currentSearchQuery || 
+                    item.name.toLowerCase().includes(currentSearchQuery) ||
+                    item.pn.toLowerCase().includes(currentSearchQuery) ||
+                    item.class.toLowerCase().includes(currentSearchQuery) ||
+                    (item.diameter && item.diameter.toLowerCase().includes(currentSearchQuery));
+                return matchesCat && matchesQuery;
+            });
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'cut-card rounded-md p-4 flex flex-col justify-between';
+
+                let cutHtml = '';
+                if (!item.cut) {
+                    cutHtml = `<div class="text-xs font-bold text-apogeeRed italic my-2">${item.note || 'SETTINGS NOT SPECIFIED'}</div>`;
+                } else if (Array.isArray(item.cut)) {
+                    item.cut.forEach(c => {
+                        cutHtml += buildParamRowHtml(c.type || 'Cut', c.spd, c.pwr, c.freq);
+                    });
+                } else {
+                    cutHtml = buildParamRowHtml('Vector Cut', item.cut.spd, item.cut.pwr, item.cut.freq);
+                }
+
+                let engraveHtml = '';
+                if (item.engrave && item.engrave.length > 0) {
+                    item.engrave.forEach(e => {
+                        engraveHtml += buildParamRowHtml(e.type || 'Engrave / Raster', e.spd, e.pwr, e.freq);
+                    });
+                }
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 font-mono">${item.class}</span>
+                            <span class="text-[10px] text-slate-500 font-mono">P/N: ${item.pn}</span>
+                        </div>
+                        <h3 class="font-heading font-bold text-sm text-apogeeBlue mb-1 uppercase tracking-wide">${item.name}</h3>
+                        ${item.diameter && item.diameter !== 'N/A' ? `<div class="text-[11px] text-slate-500 font-mono mb-3">${item.diameter}</div>` : '<div class="mb-3"></div>'}
+                        
+                        ${cutHtml}
+                        ${engraveHtml}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            const statusEl = document.getElementById('searchStatus');
+            if (statusEl) {
+                statusEl.innerText = `// SHOWING ${filtered.length} SPECS`;
+            }
+        }
+
+        /* ----------------------------------------------------
+           TOAST NOTIFICATION UTILITY
+        ---------------------------------------------------- */
+        let toastTimeout = null;
+        function showToast(msg) {
+            const banner = document.getElementById('toastBanner');
+            const messageEl = document.getElementById('toastMessage');
+            if (!banner || !messageEl) return;
+
+            messageEl.innerText = msg;
+            banner.classList.remove('translate-y-20', 'opacity-0');
+            banner.classList.add('translate-y-0', 'opacity-100');
+
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                banner.classList.remove('translate-y-0', 'opacity-100');
+                banner.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Initialize App on Page Load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadFromCache();
+            renderCutGrid();
+        });
+    </script>
+</body>
+</html>
