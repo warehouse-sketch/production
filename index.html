@@ -1,6 +1,3 @@
-Here is the updated `index.html` file with the second priority queue section added ("Production Priority Queue - Extra"), functioning completely independently with its own local storage, controls, inputs, and table:
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -145,6 +142,14 @@ Here is the updated `index.html` file with the second priority queue section add
             outline: none;
             border-color: #005596;
             box-shadow: 0 0 0 2px rgba(0, 85, 150, 0.2);
+        }
+
+        /* Remove default marker on summary */
+        details > summary {
+            list-style: none;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
         }
     </style>
 </head>
@@ -336,161 +341,170 @@ Here is the updated `index.html` file with the second priority queue section add
             </div>
         </div>
 
-        <!-- SECTION 2: PRODUCTION PRIORITY QUEUE - EXTRA -->
+        <!-- SECTION 2: PRODUCTION PRIORITY QUEUE - EXTRA (COLLAPSIBLE, COLLAPSED BY DEFAULT) -->
         <div class="mb-12">
-            <div class="flex items-center justify-between mb-4 pb-2 border-b-2 border-apogeeBlue">
-                <h2 class="font-heading text-lg font-bold text-apogeeBlue uppercase flex items-center gap-2">
-                    <i class="fa-solid fa-list-check"></i> Production Priority Queue - Extra
-                </h2>
-            </div>
-
-            <!-- HOW TO USE DROPDOWN -->
-            <div class="w-full mb-6">
-                <details class="apogee-card group">
-                    <summary class="apogee-card-header p-3.5 flex items-center justify-between cursor-pointer text-xs uppercase font-bold text-apogeeBlue hover:text-apogeeBlueDark transition select-none">
-                        <span class="flex items-center gap-2">
-                            <i class="fa-solid fa-circle-question text-apogeeBlue text-base"></i>
-                            <span>How to Use / Copy Data Instructions (Extra)</span>
-                        </span>
-                        <i class="fa-solid fa-chevron-down transform group-open:rotate-180 transition-transform duration-200 text-slate-500"></i>
-                    </summary>
-                    <div class="p-4 border-t border-slate-200 bg-slate-50 flex flex-col items-center">
-                        <p class="text-xs text-slate-600 mb-3 font-sans max-w-2xl text-center">
-                            Select and copy rows directly from https://apogeerockets.com/docs/Priority_Build_Report.html / Priority Build Report table, then paste into the box below and click <strong>Parse & Load Data</strong>.
-                        </p>
-                        <div class="rounded overflow-hidden border border-slate-300 shadow-md max-w-4xl w-full">
-                            <img src="https://raw.githubusercontent.com/warehouse-sketch/production/main/webfiles/howtouse.gif" alt="How to copy and paste priority queue data" class="w-full h-auto block" />
-                        </div>
+            <details class="group/extra">
+                <summary class="flex items-center justify-between mb-4 pb-2 border-b-2 border-apogeeBlue cursor-pointer select-none hover:opacity-80 transition">
+                    <h2 class="font-heading text-lg font-bold text-apogeeBlue uppercase flex items-center gap-2">
+                        <i class="fa-solid fa-list-check"></i> Production Priority Queue - Extra
+                    </h2>
+                    <div class="flex items-center gap-2 text-xs font-heading font-bold text-apogeeBlue uppercase">
+                        <span class="group-open/extra:hidden">Expand</span>
+                        <span class="hidden group-open/extra:inline">Collapse</span>
+                        <i class="fa-solid fa-chevron-down transform group-open/extra:rotate-180 transition-transform duration-200"></i>
                     </div>
-                </details>
-            </div>
+                </summary>
 
-            <!-- CONTROL BAR: DATE & ACTIONS -->
-            <div class="w-full mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Schedule Date -->
-                <div class="apogee-card p-3.5 flex items-center justify-between">
-                    <div class="text-xs font-bold font-heading text-slate-700 uppercase">
-                        <i class="fa-solid fa-calendar-days text-apogeeBlue mr-1"></i> Schedule Date:
+                <div class="pt-2">
+                    <!-- HOW TO USE DROPDOWN -->
+                    <div class="w-full mb-6">
+                        <details class="apogee-card group">
+                            <summary class="apogee-card-header p-3.5 flex items-center justify-between cursor-pointer text-xs uppercase font-bold text-apogeeBlue hover:text-apogeeBlueDark transition select-none">
+                                <span class="flex items-center gap-2">
+                                    <i class="fa-solid fa-circle-question text-apogeeBlue text-base"></i>
+                                    <span>How to Use / Copy Data Instructions (Extra)</span>
+                                </span>
+                                <i class="fa-solid fa-chevron-down transform group-open:rotate-180 transition-transform duration-200 text-slate-500"></i>
+                            </summary>
+                            <div class="p-4 border-t border-slate-200 bg-slate-50 flex flex-col items-center">
+                                <p class="text-xs text-slate-600 mb-3 font-sans max-w-2xl text-center">
+                                    Select and copy rows directly from https://apogeerockets.com/docs/Priority_Build_Report.html / Priority Build Report table, then paste into the box below and click <strong>Parse & Load Data</strong>.
+                                </p>
+                                <div class="rounded overflow-hidden border border-slate-300 shadow-md max-w-4xl w-full">
+                                    <img src="https://raw.githubusercontent.com/warehouse-sketch/production/main/webfiles/howtouse.gif" alt="How to copy and paste priority queue data" class="w-full h-auto block" />
+                                </div>
+                            </div>
+                        </details>
                     </div>
-                    <input 
-                        type="date" 
-                        id="priorityDateInput_extra" 
-                        onchange="updatePriorityDate_extra(this.value)" 
-                        class="bg-white text-slate-800 font-mono text-xs px-3 py-1.5 focus:outline-none"
-                    />
-                </div>
 
-                <!-- Stats & Quick Count -->
-                <div class="apogee-card p-3.5 flex items-center justify-between">
-                    <div class="text-xs font-heading font-bold text-slate-700">
-                        TOTAL ITEMS: <strong id="statTotal_extra" class="text-apogeeBlue text-sm ml-1">0</strong>
-                    </div>
-                    <div class="text-xs font-heading font-bold text-slate-700">
-                        PENDING QTY: <strong id="statQty_extra" class="text-apogeeRed text-sm ml-1">0</strong>
-                    </div>
-                </div>
+                    <!-- CONTROL BAR: DATE & ACTIONS -->
+                    <div class="w-full mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Schedule Date -->
+                        <div class="apogee-card p-3.5 flex items-center justify-between">
+                            <div class="text-xs font-bold font-heading text-slate-700 uppercase">
+                                <i class="fa-solid fa-calendar-days text-apogeeBlue mr-1"></i> Schedule Date:
+                            </div>
+                            <input 
+                                type="date" 
+                                id="priorityDateInput_extra" 
+                                onchange="updatePriorityDate_extra(this.value)" 
+                                class="bg-white text-slate-800 font-mono text-xs px-3 py-1.5 focus:outline-none"
+                            />
+                        </div>
 
-                <!-- Clear & Export Actions -->
-                <div class="apogee-card p-3.5 flex items-center justify-end gap-2 flex-wrap">
-                    <button onclick="copyQueueForGoogleSheets_extra()" class="btn-apogee-green px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5" title="Copy queue formatted for Google Sheets">
-                        <i class="fa-solid fa-copy"></i> Copy to Sheets
-                    </button>
-                    <button onclick="clearAllPriorities_extra()" class="btn-apogee-red px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-trash-can"></i> Clear List
-                    </button>
-                    <button onclick="exportPriorityList_extra()" class="btn-apogee-secondary px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-file-csv text-apogeeBlue"></i> CSV
-                    </button>
-                </div>
-            </div>
+                        <!-- Stats & Quick Count -->
+                        <div class="apogee-card p-3.5 flex items-center justify-between">
+                            <div class="text-xs font-heading font-bold text-slate-700">
+                                TOTAL ITEMS: <strong id="statTotal_extra" class="text-apogeeBlue text-sm ml-1">0</strong>
+                            </div>
+                            <div class="text-xs font-heading font-bold text-slate-700">
+                                PENDING QTY: <strong id="statQty_extra" class="text-apogeeRed text-sm ml-1">0</strong>
+                            </div>
+                        </div>
 
-            <!-- INPUT SECTION: BULK PASTE & MANUAL ENTRY (SIDE-BY-SIDE 2-COLUMN GRID) -->
-            <div class="w-full mb-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <!-- Bulk Paste Box -->
-                <div class="apogee-card p-4 flex flex-col justify-between">
-                    <div class="space-y-2">
-                        <div class="flex items-center justify-between text-xs font-heading font-bold mb-2">
-                            <span class="text-apogeeBlue uppercase"><i class="fa-solid fa-paste mr-1"></i> Paste Priority Data (Tab-Separated)</span>
-                        </div>
-                        <textarea 
-                            id="pasteInputArea_extra" 
-                            rows="4" 
-                            placeholder="Paste copied Priority Build Report / inventory rows here..."
-                            class="w-full bg-slate-50 p-2.5 text-xs font-mono text-slate-800 placeholder-slate-400 resize-y"
-                        ></textarea>
-                    </div>
-                    <div class="flex items-center justify-between pt-3 border-t border-slate-100 mt-3">
-                        <div class="text-[11px] text-slate-500 font-sans">
-                            Auto-extracts Parent Code, Desc, Avail, Max, Run Qty.
-                        </div>
-                        <button onclick="handleParseAndLoad_extra()" class="btn-apogee-primary px-4 py-2 font-bold text-xs rounded shadow transition active:scale-95 flex items-center gap-2">
-                            <i class="fa-solid fa-bolt text-apogeeYellow"></i>
-                            <span>Parse & Load Data</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Manual Single Item Entry Box -->
-                <div class="apogee-card p-4 flex flex-col justify-between">
-                    <div>
-                        <div class="text-xs font-heading font-bold text-apogeeBlue uppercase mb-2">
-                            <i class="fa-solid fa-circle-plus mr-1"></i> Manual Item Entry
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 mb-2">
-                            <input type="text" id="manualCode_extra" placeholder="Code (e.g. 10067)" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
-                            <input type="text" id="manualRunQty_extra" placeholder="Run Qty" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 mb-2">
-                            <input type="text" id="manualAvail_extra" placeholder="Avail" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
-                            <input type="text" id="manualMax_extra" placeholder="Max" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
-                        </div>
-                        <input type="text" id="manualDesc_extra" placeholder="Description" class="w-full bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800 mb-2" />
-                    </div>
-                    <button onclick="handleManualAdd_extra()" class="btn-apogee-secondary w-full py-2 font-bold text-xs rounded transition active:scale-95 flex items-center justify-center gap-1.5 border-slate-300 mt-2">
-                        <i class="fa-solid fa-plus text-apogeeBlue"></i> Add Item to Queue
-                    </button>
-                </div>
-            </div>
-
-            <!-- TABLE DISPLAY SECTION -->
-            <div class="w-full">
-                <div class="apogee-card overflow-hidden">
-                    <div class="apogee-card-header px-4 py-3 flex items-center justify-between text-xs">
-                        <div class="font-bold uppercase tracking-wider flex items-center gap-2">
-                            <i class="fa-solid fa-list-check text-apogeeBlue"></i> Active Priority Queue (Extra)
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <button onclick="copyQueueForGoogleSheets_extra()" class="btn-apogee-green px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-copy"></i> Copy Active Queue for Google Sheets
+                        <!-- Clear & Export Actions -->
+                        <div class="apogee-card p-3.5 flex items-center justify-end gap-2 flex-wrap">
+                            <button onclick="copyQueueForGoogleSheets_extra()" class="btn-apogee-green px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5" title="Copy queue formatted for Google Sheets">
+                                <i class="fa-solid fa-copy"></i> Copy to Sheets
                             </button>
-                            <div class="text-slate-500 font-normal" id="queueStatusText_extra">0 items loaded</div>
+                            <button onclick="clearAllPriorities_extra()" class="btn-apogee-red px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-trash-can"></i> Clear List
+                            </button>
+                            <button onclick="exportPriorityList_extra()" class="btn-apogee-secondary px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-file-csv text-apogeeBlue"></i> CSV
+                            </button>
                         </div>
                     </div>
 
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left font-sans text-xs">
-                            <thead>
-                                <tr class="bg-slate-100 text-slate-700 font-heading border-b border-slate-300 uppercase text-[11px] tracking-wider">
-                                    <th class="p-3 w-10 text-center">✓</th>
-                                    <th class="p-3">Parent Code</th>
-                                    <th class="p-3">Description</th>
-                                    <th class="p-3 text-center">Avail</th>
-                                    <th class="p-3 text-center">Max</th>
-                                    <th class="p-3 text-center text-apogeeRed font-bold">Priority Run Qty</th>
-                                    <th class="p-3 text-center text-amber-600 font-bold w-24">In Box</th>
-                                    <th class="p-3 text-center text-apogeeBlue font-bold w-24">Made Actual</th>
-                                    <th class="p-3 text-center text-red-600 font-bold w-24">Bad</th>
-                                    <th class="p-3 text-center text-emerald-600 font-bold w-28">Time Taken</th>
-                                    <th class="p-3 text-center w-16">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="priorityTableBody_extra">
-                                <!-- Populated dynamically via JavaScript -->
-                            </tbody>
-                        </table>
+                    <!-- INPUT SECTION: BULK PASTE & MANUAL ENTRY (SIDE-BY-SIDE 2-COLUMN GRID) -->
+                    <div class="w-full mb-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <!-- Bulk Paste Box -->
+                        <div class="apogee-card p-4 flex flex-col justify-between">
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between text-xs font-heading font-bold mb-2">
+                                    <span class="text-apogeeBlue uppercase"><i class="fa-solid fa-paste mr-1"></i> Paste Priority Data (Tab-Separated)</span>
+                                </div>
+                                <textarea 
+                                    id="pasteInputArea_extra" 
+                                    rows="4" 
+                                    placeholder="Paste copied Priority Build Report / inventory rows here..."
+                                    class="w-full bg-slate-50 p-2.5 text-xs font-mono text-slate-800 placeholder-slate-400 resize-y"
+                                ></textarea>
+                            </div>
+                            <div class="flex items-center justify-between pt-3 border-t border-slate-100 mt-3">
+                                <div class="text-[11px] text-slate-500 font-sans">
+                                    Auto-extracts Parent Code, Desc, Avail, Max, Run Qty.
+                                </div>
+                                <button onclick="handleParseAndLoad_extra()" class="btn-apogee-primary px-4 py-2 font-bold text-xs rounded shadow transition active:scale-95 flex items-center gap-2">
+                                    <i class="fa-solid fa-bolt text-apogeeYellow"></i>
+                                    <span>Parse & Load Data</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Manual Single Item Entry Box -->
+                        <div class="apogee-card p-4 flex flex-col justify-between">
+                            <div>
+                                <div class="text-xs font-heading font-bold text-apogeeBlue uppercase mb-2">
+                                    <i class="fa-solid fa-circle-plus mr-1"></i> Manual Item Entry
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 mb-2">
+                                    <input type="text" id="manualCode_extra" placeholder="Code (e.g. 10067)" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                                    <input type="text" id="manualRunQty_extra" placeholder="Run Qty" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 mb-2">
+                                    <input type="text" id="manualAvail_extra" placeholder="Avail" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                                    <input type="text" id="manualMax_extra" placeholder="Max" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                                </div>
+                                <input type="text" id="manualDesc_extra" placeholder="Description" class="w-full bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800 mb-2" />
+                            </div>
+                            <button onclick="handleManualAdd_extra()" class="btn-apogee-secondary w-full py-2 font-bold text-xs rounded transition active:scale-95 flex items-center justify-center gap-1.5 border-slate-300 mt-2">
+                                <i class="fa-solid fa-plus text-apogeeBlue"></i> Add Item to Queue
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- TABLE DISPLAY SECTION -->
+                    <div class="w-full">
+                        <div class="apogee-card overflow-hidden">
+                            <div class="apogee-card-header px-4 py-3 flex items-center justify-between text-xs">
+                                <div class="font-bold uppercase tracking-wider flex items-center gap-2">
+                                    <i class="fa-solid fa-list-check text-apogeeBlue"></i> Active Priority Queue (Extra)
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <button onclick="copyQueueForGoogleSheets_extra()" class="btn-apogee-green px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1.5">
+                                        <i class="fa-solid fa-copy"></i> Copy Active Queue for Google Sheets
+                                    </button>
+                                    <div class="text-slate-500 font-normal" id="queueStatusText_extra">0 items loaded</div>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left font-sans text-xs">
+                                    <thead>
+                                        <tr class="bg-slate-100 text-slate-700 font-heading border-b border-slate-300 uppercase text-[11px] tracking-wider">
+                                            <th class="p-3 w-10 text-center">✓</th>
+                                            <th class="p-3">Parent Code</th>
+                                            <th class="p-3">Description</th>
+                                            <th class="p-3 text-center">Avail</th>
+                                            <th class="p-3 text-center">Max</th>
+                                            <th class="p-3 text-center text-apogeeRed font-bold">Priority Run Qty</th>
+                                            <th class="p-3 text-center text-amber-600 font-bold w-24">In Box</th>
+                                            <th class="p-3 text-center text-apogeeBlue font-bold w-24">Made Actual</th>
+                                            <th class="p-3 text-center text-red-600 font-bold w-24">Bad</th>
+                                            <th class="p-3 text-center text-emerald-600 font-bold w-28">Time Taken</th>
+                                            <th class="p-3 text-center w-16">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="priorityTableBody_extra">
+                                        <!-- Populated dynamically via JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </details>
         </div>
 
         <!-- SECTION 3: LASER CUT SETTINGS & SPECIFICATIONS ARCHIVE -->
@@ -1527,5 +1541,3 @@ Here is the updated `index.html` file with the second priority queue section add
     </script>
 </body>
 </html>
-
-```
