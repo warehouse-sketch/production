@@ -1,3 +1,6 @@
+Here is the updated `index.html` file with the second priority queue section added ("Production Priority Queue - Extra"), functioning completely independently with its own local storage, controls, inputs, and table:
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -333,7 +336,164 @@
             </div>
         </div>
 
-        <!-- SECTION 2: LASER CUT SETTINGS & SPECIFICATIONS ARCHIVE -->
+        <!-- SECTION 2: PRODUCTION PRIORITY QUEUE - EXTRA -->
+        <div class="mb-12">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b-2 border-apogeeBlue">
+                <h2 class="font-heading text-lg font-bold text-apogeeBlue uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-list-check"></i> Production Priority Queue - Extra
+                </h2>
+            </div>
+
+            <!-- HOW TO USE DROPDOWN -->
+            <div class="w-full mb-6">
+                <details class="apogee-card group">
+                    <summary class="apogee-card-header p-3.5 flex items-center justify-between cursor-pointer text-xs uppercase font-bold text-apogeeBlue hover:text-apogeeBlueDark transition select-none">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-circle-question text-apogeeBlue text-base"></i>
+                            <span>How to Use / Copy Data Instructions (Extra)</span>
+                        </span>
+                        <i class="fa-solid fa-chevron-down transform group-open:rotate-180 transition-transform duration-200 text-slate-500"></i>
+                    </summary>
+                    <div class="p-4 border-t border-slate-200 bg-slate-50 flex flex-col items-center">
+                        <p class="text-xs text-slate-600 mb-3 font-sans max-w-2xl text-center">
+                            Select and copy rows directly from https://apogeerockets.com/docs/Priority_Build_Report.html / Priority Build Report table, then paste into the box below and click <strong>Parse & Load Data</strong>.
+                        </p>
+                        <div class="rounded overflow-hidden border border-slate-300 shadow-md max-w-4xl w-full">
+                            <img src="https://raw.githubusercontent.com/warehouse-sketch/production/main/webfiles/howtouse.gif" alt="How to copy and paste priority queue data" class="w-full h-auto block" />
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+            <!-- CONTROL BAR: DATE & ACTIONS -->
+            <div class="w-full mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Schedule Date -->
+                <div class="apogee-card p-3.5 flex items-center justify-between">
+                    <div class="text-xs font-bold font-heading text-slate-700 uppercase">
+                        <i class="fa-solid fa-calendar-days text-apogeeBlue mr-1"></i> Schedule Date:
+                    </div>
+                    <input 
+                        type="date" 
+                        id="priorityDateInput_extra" 
+                        onchange="updatePriorityDate_extra(this.value)" 
+                        class="bg-white text-slate-800 font-mono text-xs px-3 py-1.5 focus:outline-none"
+                    />
+                </div>
+
+                <!-- Stats & Quick Count -->
+                <div class="apogee-card p-3.5 flex items-center justify-between">
+                    <div class="text-xs font-heading font-bold text-slate-700">
+                        TOTAL ITEMS: <strong id="statTotal_extra" class="text-apogeeBlue text-sm ml-1">0</strong>
+                    </div>
+                    <div class="text-xs font-heading font-bold text-slate-700">
+                        PENDING QTY: <strong id="statQty_extra" class="text-apogeeRed text-sm ml-1">0</strong>
+                    </div>
+                </div>
+
+                <!-- Clear & Export Actions -->
+                <div class="apogee-card p-3.5 flex items-center justify-end gap-2 flex-wrap">
+                    <button onclick="copyQueueForGoogleSheets_extra()" class="btn-apogee-green px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5" title="Copy queue formatted for Google Sheets">
+                        <i class="fa-solid fa-copy"></i> Copy to Sheets
+                    </button>
+                    <button onclick="clearAllPriorities_extra()" class="btn-apogee-red px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-trash-can"></i> Clear List
+                    </button>
+                    <button onclick="exportPriorityList_extra()" class="btn-apogee-secondary px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-file-csv text-apogeeBlue"></i> CSV
+                    </button>
+                </div>
+            </div>
+
+            <!-- INPUT SECTION: BULK PASTE & MANUAL ENTRY (SIDE-BY-SIDE 2-COLUMN GRID) -->
+            <div class="w-full mb-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <!-- Bulk Paste Box -->
+                <div class="apogee-card p-4 flex flex-col justify-between">
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-xs font-heading font-bold mb-2">
+                            <span class="text-apogeeBlue uppercase"><i class="fa-solid fa-paste mr-1"></i> Paste Priority Data (Tab-Separated)</span>
+                        </div>
+                        <textarea 
+                            id="pasteInputArea_extra" 
+                            rows="4" 
+                            placeholder="Paste copied Priority Build Report / inventory rows here..."
+                            class="w-full bg-slate-50 p-2.5 text-xs font-mono text-slate-800 placeholder-slate-400 resize-y"
+                        ></textarea>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-100 mt-3">
+                        <div class="text-[11px] text-slate-500 font-sans">
+                            Auto-extracts Parent Code, Desc, Avail, Max, Run Qty.
+                        </div>
+                        <button onclick="handleParseAndLoad_extra()" class="btn-apogee-primary px-4 py-2 font-bold text-xs rounded shadow transition active:scale-95 flex items-center gap-2">
+                            <i class="fa-solid fa-bolt text-apogeeYellow"></i>
+                            <span>Parse & Load Data</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Manual Single Item Entry Box -->
+                <div class="apogee-card p-4 flex flex-col justify-between">
+                    <div>
+                        <div class="text-xs font-heading font-bold text-apogeeBlue uppercase mb-2">
+                            <i class="fa-solid fa-circle-plus mr-1"></i> Manual Item Entry
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <input type="text" id="manualCode_extra" placeholder="Code (e.g. 10067)" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                            <input type="text" id="manualRunQty_extra" placeholder="Run Qty" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <input type="text" id="manualAvail_extra" placeholder="Avail" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                            <input type="text" id="manualMax_extra" placeholder="Max" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                        </div>
+                        <input type="text" id="manualDesc_extra" placeholder="Description" class="w-full bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800 mb-2" />
+                    </div>
+                    <button onclick="handleManualAdd_extra()" class="btn-apogee-secondary w-full py-2 font-bold text-xs rounded transition active:scale-95 flex items-center justify-center gap-1.5 border-slate-300 mt-2">
+                        <i class="fa-solid fa-plus text-apogeeBlue"></i> Add Item to Queue
+                    </button>
+                </div>
+            </div>
+
+            <!-- TABLE DISPLAY SECTION -->
+            <div class="w-full">
+                <div class="apogee-card overflow-hidden">
+                    <div class="apogee-card-header px-4 py-3 flex items-center justify-between text-xs">
+                        <div class="font-bold uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-apogeeBlue"></i> Active Priority Queue (Extra)
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button onclick="copyQueueForGoogleSheets_extra()" class="btn-apogee-green px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-copy"></i> Copy Active Queue for Google Sheets
+                            </button>
+                            <div class="text-slate-500 font-normal" id="queueStatusText_extra">0 items loaded</div>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left font-sans text-xs">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-700 font-heading border-b border-slate-300 uppercase text-[11px] tracking-wider">
+                                    <th class="p-3 w-10 text-center">✓</th>
+                                    <th class="p-3">Parent Code</th>
+                                    <th class="p-3">Description</th>
+                                    <th class="p-3 text-center">Avail</th>
+                                    <th class="p-3 text-center">Max</th>
+                                    <th class="p-3 text-center text-apogeeRed font-bold">Priority Run Qty</th>
+                                    <th class="p-3 text-center text-amber-600 font-bold w-24">In Box</th>
+                                    <th class="p-3 text-center text-apogeeBlue font-bold w-24">Made Actual</th>
+                                    <th class="p-3 text-center text-red-600 font-bold w-24">Bad</th>
+                                    <th class="p-3 text-center text-emerald-600 font-bold w-28">Time Taken</th>
+                                    <th class="p-3 text-center w-16">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="priorityTableBody_extra">
+                                <!-- Populated dynamically via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: LASER CUT SETTINGS & SPECIFICATIONS ARCHIVE -->
         <div class="mb-12">
             <div class="flex items-center justify-between mb-4 pb-2 border-b-2 border-apogeeBlue">
                 <h2 class="font-heading text-lg font-bold text-apogeeBlue uppercase flex items-center gap-2">
@@ -435,7 +595,7 @@
         }
 
         /* ----------------------------------------------------
-           PRIORITY QUEUE LOGIC
+           PRIORITY QUEUE LOGIC (MAIN)
         ---------------------------------------------------- */
         const STORAGE_KEY_ITEMS = 'apogee_priority_items_v4';
         const STORAGE_KEY_DATE = 'apogee_priority_date_v4';
@@ -804,6 +964,379 @@
             showToast('Exported priority queue CSV file.');
         }
 
+
+        /* ----------------------------------------------------
+           PRIORITY QUEUE LOGIC (EXTRA)
+        ---------------------------------------------------- */
+        const STORAGE_KEY_ITEMS_EXTRA = 'apogee_priority_items_extra_v4';
+        const STORAGE_KEY_DATE_EXTRA = 'apogee_priority_date_extra_v4';
+
+        let priorityStateExtra = {
+            date: new Date().toISOString().split('T')[0],
+            items: []
+        };
+
+        function loadFromCache_extra() {
+            try {
+                const savedDate = localStorage.getItem(STORAGE_KEY_DATE_EXTRA);
+                if (savedDate) priorityStateExtra.date = savedDate;
+
+                const savedItems = localStorage.getItem(STORAGE_KEY_ITEMS_EXTRA);
+                if (savedItems) {
+                    priorityStateExtra.items = JSON.parse(savedItems);
+                }
+            } catch(e) {}
+            
+            const dateInput = document.getElementById('priorityDateInput_extra');
+            if(dateInput) dateInput.value = priorityStateExtra.date;
+            renderPriorityTable_extra();
+        }
+
+        function saveToCache_extra() {
+            try {
+                localStorage.setItem(STORAGE_KEY_DATE_EXTRA, priorityStateExtra.date);
+                localStorage.setItem(STORAGE_KEY_ITEMS_EXTRA, JSON.stringify(priorityStateExtra.items));
+            } catch(e) {}
+        }
+
+        function updatePriorityDate_extra(val) {
+            priorityStateExtra.date = val;
+            saveToCache_extra();
+            playApogeeNote('E5');
+            showToast(`Extra Schedule date updated to ${val}`);
+        }
+
+        function handleParseAndLoad_extra() {
+            const rawText = document.getElementById('pasteInputArea_extra').value;
+            if (!rawText.trim()) {
+                showToast('Please paste data into the textarea first.');
+                return;
+            }
+
+            const lines = rawText.trim().split('\n');
+            let addedCount = 0;
+
+            lines.forEach((line) => {
+                if (!line.trim()) return;
+
+                let cols = line.split('\t');
+                if (cols.length < 5) {
+                    cols = line.split(/\s{2,}/);
+                }
+
+                if (cols.length < 8) return;
+
+                const code = cols[0] ? cols[0].trim() : '';
+                const desc = cols[1] ? cols[1].trim() : '';
+
+                const upperCode = code.toUpperCase();
+                const upperDesc = desc.toUpperCase();
+                if (upperCode.includes('CODE') || upperDesc.includes('DESCRIPTION') || upperCode.includes('(DAYS)')) {
+                    return;
+                }
+
+                const avail = cols[5] ? cols[5].trim() : '0';
+                const max = cols[6] ? cols[6].trim() : '0';
+                const runQty = cols[7] ? cols[7].trim() : '0';
+
+                if (code) {
+                    priorityStateExtra.items.push({
+                        id: 'item_ex_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                        code: code,
+                        description: desc,
+                        avail: avail,
+                        max: max,
+                        runQty: runQty,
+                        inBox: '',
+                        madeActual: '',
+                        badActual: '',
+                        timeTaken: '',
+                        completed: false
+                    });
+                    addedCount++;
+                }
+            });
+
+            if (addedCount > 0) {
+                saveToCache_extra();
+                renderPriorityTable_extra();
+                document.getElementById('pasteInputArea_extra').value = '';
+                playApogeeNote('G5');
+                showToast(`Successfully loaded ${addedCount} extra priority item(s)!`);
+            } else {
+                showToast('Could not parse rows. Ensure tab-separated format.');
+            }
+        }
+
+        function handleManualAdd_extra() {
+            const code = document.getElementById('manualCode_extra').value.trim();
+            const runQty = document.getElementById('manualRunQty_extra').value.trim();
+            const avail = document.getElementById('manualAvail_extra').value.trim() || '0';
+            const max = document.getElementById('manualMax_extra').value.trim() || '0';
+            const desc = document.getElementById('manualDesc_extra').value.trim() || 'Manual Entry Item';
+
+            if (!code) {
+                showToast('Please enter at least a Parent Code.');
+                return;
+            }
+
+            priorityStateExtra.items.push({
+                id: 'item_ex_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                code: code,
+                description: desc,
+                avail: avail,
+                max: max,
+                runQty: runQty || '0',
+                inBox: '',
+                madeActual: '',
+                badActual: '',
+                timeTaken: '',
+                completed: false
+            });
+
+            saveToCache_extra();
+            renderPriorityTable_extra();
+
+            document.getElementById('manualCode_extra').value = '';
+            document.getElementById('manualRunQty_extra').value = '';
+            document.getElementById('manualAvail_extra').value = '';
+            document.getElementById('manualMax_extra').value = '';
+            document.getElementById('manualDesc_extra').value = '';
+
+            playApogeeNote('C5');
+            showToast(`Added item ${code} to extra priority queue.`);
+        }
+
+        function updateInBox_extra(id, val) {
+            const item = priorityStateExtra.items.find(i => i.id === id);
+            if (item) {
+                item.inBox = val;
+                saveToCache_extra();
+            }
+        }
+
+        function updateMadeActual_extra(id, val) {
+            const item = priorityStateExtra.items.find(i => i.id === id);
+            if (item) {
+                item.madeActual = val;
+                saveToCache_extra();
+            }
+        }
+
+        function updateBadActual_extra(id, val) {
+            const item = priorityStateExtra.items.find(i => i.id === id);
+            if (item) {
+                item.badActual = val;
+                saveToCache_extra();
+            }
+        }
+
+        function updateTimeTaken_extra(id, val) {
+            const item = priorityStateExtra.items.find(i => i.id === id);
+            if (item) {
+                item.timeTaken = val;
+                saveToCache_extra();
+            }
+        }
+
+        function toggleItemComplete_extra(id) {
+            const item = priorityStateExtra.items.find(i => i.id === id);
+            if (item) {
+                item.completed = !item.completed;
+                saveToCache_extra();
+                renderPriorityTable_extra();
+                if (item.completed) playApogeeNote('C6');
+            }
+        }
+
+        function deleteItem_extra(id) {
+            priorityStateExtra.items = priorityStateExtra.items.filter(i => i.id !== id);
+            saveToCache_extra();
+            renderPriorityTable_extra();
+            playApogeeNote('A4');
+            showToast('Item removed from extra queue.');
+        }
+
+        function clearAllPriorities_extra() {
+            if (priorityStateExtra.items.length === 0) return;
+            if (confirm('Clear all items from the extra priority list?')) {
+                priorityStateExtra.items = [];
+                saveToCache_extra();
+                renderPriorityTable_extra();
+                playApogeeNote('G4');
+                showToast('Extra priority list cleared.');
+            }
+        }
+
+        function renderPriorityTable_extra() {
+            const tbody = document.getElementById('priorityTableBody_extra');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+
+            let totalQty = 0;
+
+            priorityStateExtra.items.forEach(item => {
+                const runVal = parseInt(item.runQty) || 0;
+                totalQty += runVal;
+
+                const tr = document.createElement('tr');
+                tr.className = `priority-row ${item.completed ? 'completed' : ''}`;
+
+                tr.innerHTML = `
+                    <td class="p-3 text-center">
+                        <input 
+                            type="checkbox" 
+                            ${item.completed ? 'checked' : ''} 
+                            onchange="toggleItemComplete_extra('${item.id}')"
+                            class="rounded border-slate-300 text-apogeeBlue focus:ring-apogeeBlue cursor-pointer w-4 h-4"
+                        />
+                    </td>
+                    <td class="p-3 font-mono font-bold text-slate-800 priority-text">${item.code}</td>
+                    <td class="p-3 font-medium text-slate-700 priority-text">${item.description}</td>
+                    <td class="p-3 text-center font-mono text-slate-600">${item.avail}</td>
+                    <td class="p-3 text-center font-mono text-slate-600">${item.max}</td>
+                    <td class="p-3 text-center font-mono font-bold text-apogeeRed">${item.runQty}</td>
+                    <td class="p-3 text-center">
+                        <input 
+                            type="text" 
+                            value="${item.inBox || ''}" 
+                            placeholder="In Box"
+                            oninput="updateInBox_extra('${item.id}', this.value)"
+                            class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border border-slate-300 rounded focus:border-amber-500 focus:outline-none"
+                        />
+                    </td>
+                    <td class="p-3 text-center">
+                        <input 
+                            type="text" 
+                            value="${item.madeActual || ''}" 
+                            placeholder="Made"
+                            oninput="updateMadeActual_extra('${item.id}', this.value)"
+                            class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border border-slate-300 rounded focus:border-apogeeBlue focus:outline-none"
+                        />
+                    </td>
+                    <td class="p-3 text-center">
+                        <input 
+                            type="text" 
+                            value="${item.badActual || ''}" 
+                            placeholder="Bad"
+                            oninput="updateBadActual_extra('${item.id}', this.value)"
+                            class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border border-slate-300 rounded focus:border-red-500 focus:outline-none"
+                        />
+                    </td>
+                    <td class="p-3 text-center">
+                        <input 
+                            type="text" 
+                            value="${item.timeTaken || ''}" 
+                            placeholder="Time Taken"
+                            oninput="updateTimeTaken_extra('${item.id}', this.value)"
+                            class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border border-slate-300 rounded focus:border-emerald-500 focus:outline-none"
+                        />
+                    </td>
+                    <td class="p-3 text-center">
+                        <button onclick="deleteItem_extra('${item.id}')" class="text-slate-400 hover:text-apogeeRed transition p-1">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('statTotal_extra').innerText = priorityStateExtra.items.length;
+            document.getElementById('statQty_extra').innerText = totalQty;
+            document.getElementById('queueStatusText_extra').innerText = `${priorityStateExtra.items.length} items loaded`;
+        }
+
+        function copyQueueForGoogleSheets_extra() {
+            if (priorityStateExtra.items.length === 0) {
+                showToast('No items in extra queue to copy.');
+                return;
+            }
+
+            const formattedRows = priorityStateExtra.items.map(item => {
+                const partNumber = item.code || '';
+                const itemDesc = item.description || '';
+                const sheets = '';
+                const materialUsed = '';
+                const kanbanColor = '';
+                const availStock = item.avail || '';
+                const inBoxBeforeBuild = item.inBox || '';
+                const qtyBuilt = item.madeActual || '';
+                const badQty = item.badActual || '';
+                const totalOH = '';
+                const timeTaken = item.timeTaken || '';
+
+                return [
+                    partNumber,
+                    itemDesc,
+                    sheets,
+                    materialUsed,
+                    kanbanColor,
+                    availStock,
+                    inBoxBeforeBuild,
+                    qtyBuilt,
+                    badQty,
+                    totalOH,
+                    timeTaken
+                ].join('\t');
+            });
+
+            const copyText = formattedRows.join('\n');
+
+            navigator.clipboard.writeText(copyText).then(() => {
+                playApogeeNote('C6');
+                showToast(`Copied ${priorityStateExtra.items.length} item(s) from extra queue formatted for Google Sheets!`);
+            }).catch(err => {
+                const textArea = document.createElement('textarea');
+                textArea.value = copyText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                playApogeeNote('C6');
+                showToast(`Copied ${priorityStateExtra.items.length} item(s) from extra queue formatted for Google Sheets!`);
+            });
+        }
+
+        function exportPriorityList_extra() {
+            if (priorityStateExtra.items.length === 0) {
+                showToast('No items to export from extra queue.');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Parent Code,Description,Avail,Max,Priority Run Qty,In Box,Made Actual,Bad,Time Taken,Completed\n";
+
+            priorityStateExtra.items.forEach(item => {
+                const row = [
+                    `"${item.code}"`,
+                    `"${item.description.replace(/"/g, '""')}"`,
+                    `"${item.avail}"`,
+                    `"${item.max}"`,
+                    `"${item.runQty}"`,
+                    `"${item.inBox || ''}"`,
+                    `"${item.madeActual || ''}"`,
+                    `"${item.badActual || ''}"`,
+                    `"${item.timeTaken || ''}"`,
+                    `"${item.completed ? 'YES' : 'NO'}"`
+                ].join(",");
+                csvContent += row + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Apogee_Priority_Queue_Extra_${priorityStateExtra.date}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            playApogeeNote('E5');
+            showToast('Exported extra priority queue CSV file.');
+        }
+
+
         /* ----------------------------------------------------
            LASER CUT SETTINGS LOGIC
         ---------------------------------------------------- */
@@ -988,8 +1521,11 @@
         // Initialize App on Page Load
         window.addEventListener('DOMContentLoaded', () => {
             loadFromCache();
+            loadFromCache_extra();
             renderCutGrid();
         });
     </script>
 </body>
 </html>
+
+```
