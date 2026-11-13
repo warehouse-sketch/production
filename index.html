@@ -152,8 +152,61 @@
             display: none;
         }
     </style>
+
+    <style>
+        /* ===== Apogee Rockets redesign layer ===== */
+        :root { --blue:#005596; --blue-dk:#003d6d; --red:#c8102e; --gold:#ffcc00; --ink:#10243a; --line:#d5dde6; }
+        body { background:#eef2f6; color:var(--ink); font-size:14px; line-height:1.45; }
+        body header.apogee-header { background:linear-gradient(135deg,#005596 0%,#003d6d 75%); border-bottom:0; position:relative; padding-top:1.1rem; padding-bottom:1.3rem; }
+        header.apogee-header::after { content:""; position:absolute; left:0; right:0; bottom:0; height:5px; background:linear-gradient(90deg,var(--red) 0 72%,var(--gold) 72% 100%); }
+        body h1.font-heading { font-size:1.75rem; letter-spacing:.07em; }
+        main h2.font-heading { font-size:1.2rem; color:var(--blue-dk); border-left:5px solid var(--red); padding-left:.7rem; line-height:1.2; }
+        main .border-b-2.border-apogeeBlue { border-bottom:1px solid var(--line); padding-bottom:.6rem; }
+        body .apogee-card { border:1px solid var(--line); border-radius:10px; box-shadow:0 1px 2px rgba(0,50,100,.06), 0 8px 18px -12px rgba(0,50,100,.25); }
+        body .apogee-card-header { background:#fff; border-bottom:3px solid var(--blue); color:var(--blue-dk); }
+        body [class*="btn-apogee-"] { border-radius:7px; font-family:'Trebuchet MS',Arial,sans-serif; letter-spacing:.02em; }
+        body .btn-apogee-primary { background:var(--blue); border-color:var(--blue-dk); }
+        body .btn-apogee-primary:hover { background:var(--blue-dk); }
+        body .btn-apogee-green { background:#15803d; border-color:#14532d; }
+        body .btn-apogee-green:hover { background:#166534; }
+        body .btn-apogee-red { background:var(--red); border-color:#77000d; }
+        body .btn-apogee-red:hover { background:#990011; }
+        body .btn-apogee-secondary { background:#fff; }
+        body .btn-apogee-secondary:hover { background:#eaf2fa; border-color:var(--blue); }
+        :focus-visible { outline:2px solid #1d74b9; outline-offset:2px; }
+
+        /* Stat numbers */
+        [id^="statTotal"], [id^="statQty"], [id^="statBatches"] { font-size:1.35rem; font-family:'Trebuchet MS',Arial,sans-serif; vertical-align:-2px; }
+
+        /* Tables */
+        main table { font-size:13px; }
+        main thead tr { background:var(--blue-dk) !important; }
+        main thead th { color:#fff !important; text-transform:none !important; letter-spacing:.02em !important; font-size:12px; padding:.8rem .75rem; }
+        main thead th.text-apogeeRed { color:var(--gold) !important; }
+        main tbody td { padding:.7rem .75rem; vertical-align:middle; }
+        main tbody tr.priority-row:nth-child(even) { background:#f5f8fb; }
+        main tbody tr.priority-row:hover { background:#e8f2fc; }
+        main tbody tr.priority-row.completed { opacity:.55; }
+        main tbody input[type="text"] { border-radius:6px; padding:.4rem .5rem; }
+
+        /* Batch tracker */
+        .batch-cell { min-width:230px; }
+        .batch-tally { display:inline-flex; align-items:baseline; gap:.3rem; margin-bottom:.4rem; padding:.1rem .6rem; border-radius:999px; background:var(--gold); color:var(--blue-dk); font-size:12px; font-weight:700; }
+        .batch-tally strong { font-size:1.1rem; font-family:'Trebuchet MS',Arial,sans-serif; }
+        .batch-add { display:flex; gap:.4rem; }
+        .batch-add input { width:5.5rem; text-align:center; font-family:'Courier New',monospace; font-size:12px; padding:.35rem .4rem; background:#fff; border:1px solid #94a3b8; border-radius:6px; }
+        .batch-add button { white-space:nowrap; padding:.35rem .7rem; font-size:12px; font-weight:700; }
+        .batch-chips { display:flex; flex-wrap:wrap; gap:.25rem; margin-top:.4rem; }
+        .batch-chip { display:inline-flex; align-items:center; gap:.2rem; padding:.05rem .2rem .05rem .5rem; border:1px solid var(--blue); border-radius:999px; background:#fff; color:var(--blue-dk); font:700 11px 'Courier New',monospace; }
+        .batch-chip button { border:0; background:none; color:#64748b; font-size:14px; line-height:1; padding:0 .3rem; cursor:pointer; }
+        .batch-chip button:hover { color:var(--red); }
+
+        /* Laser cards */
+        .cut-card { border-top:3px solid var(--blue); border-radius:10px !important; }
+        .cut-card:hover { border-color:var(--red); border-top-color:var(--red); }
+    </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between select-none">
+<body class="min-h-screen flex flex-col justify-between">
     <!-- APOGEE BRANDED HEADER BAR -->
     <header class="apogee-header text-white py-4 px-4 md:px-8 shadow-md">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
@@ -176,6 +229,10 @@
                 <div class="flex items-center space-x-2 text-xs font-mono bg-black/20 px-3 py-1.5 rounded border border-white/10">
                     <i class="fa-solid fa-cloud text-apogeeYellow"></i>
                     <span>STATUS: CACHED TO BROWSER STORAGE</span>
+                </div>
+                <div class="flex items-center space-x-2 text-xs font-mono bg-black/20 px-3 py-1.5 rounded border border-white/10">
+                    <i class="fa-solid fa-boxes-stacked text-apogeeYellow"></i>
+                    <span>BATCHES RUN: <strong id="headerBatches" class="text-apogeeYellow">0</strong></span>
                 </div>
             </div>
         </div>
@@ -236,6 +293,7 @@
                     <div class="text-xs font-heading font-bold text-slate-700">
                         PENDING QTY: <strong id="statQty" class="text-apogeeRed text-sm ml-1">0</strong>
                     </div>
+<div class="text-xs font-heading font-bold text-slate-700">BATCHES RUN: <strong id="statBatches" class="text-apogeeSuccess ml-1">0</strong></div>
                 </div>
 
                 <!-- Clear & Export Actions -->
@@ -329,7 +387,8 @@
                                     <th class="p-3 text-center text-apogeeBlue font-bold w-24">Made Actual</th>
                                     <th class="p-3 text-center text-red-600 font-bold w-24">Bad</th>
                                     <th class="p-3 text-center text-emerald-600 font-bold w-28">Time Taken</th>
-                                    <th class="p-3 text-center w-16">Action</th>
+                                    <th class="p-3 text-center font-bold w-60">Batches</th>
+<th class="p-3 text-center w-16">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="priorityTableBody">
@@ -400,6 +459,7 @@
                             <div class="text-xs font-heading font-bold text-slate-700">
                                 PENDING QTY: <strong id="statQty_extra" class="text-apogeeRed text-sm ml-1">0</strong>
                             </div>
+<div class="text-xs font-heading font-bold text-slate-700">BATCHES RUN: <strong id="statBatches_extra" class="text-apogeeSuccess ml-1">0</strong></div>
                         </div>
 
                         <!-- Clear & Export Actions -->
@@ -493,7 +553,8 @@
                                             <th class="p-3 text-center text-apogeeBlue font-bold w-24">Made Actual</th>
                                             <th class="p-3 text-center text-red-600 font-bold w-24">Bad</th>
                                             <th class="p-3 text-center text-emerald-600 font-bold w-28">Time Taken</th>
-                                            <th class="p-3 text-center w-16">Action</th>
+                                            <th class="p-3 text-center font-bold w-60">Batches</th>
+<th class="p-3 text-center w-16">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody id="priorityTableBody_extra">
@@ -875,6 +936,7 @@
                             class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border border-slate-300 rounded focus:border-emerald-500 focus:outline-none"
                         />
                     </td>
+                    <td class="p-3 batch-cell">${batchCellHtml(item, 'main')}</td>
                     <td class="p-3 text-center">
                         <button onclick="deleteItem('${item.id}')" class="text-slate-400 hover:text-apogeeRed transition p-1">
                             <i class="fa-solid fa-trash"></i>
@@ -1247,6 +1309,7 @@
                             class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border border-slate-300 rounded focus:border-emerald-500 focus:outline-none"
                         />
                     </td>
+                    <td class="p-3 batch-cell">${batchCellHtml(item, 'extra')}</td>
                     <td class="p-3 text-center">
                         <button onclick="deleteItem_extra('${item.id}')" class="text-slate-400 hover:text-apogeeRed transition p-1">
                             <i class="fa-solid fa-trash"></i>
@@ -1531,6 +1594,65 @@
                 banner.classList.add('translate-y-20', 'opacity-0');
             }, 3000);
         }
+
+
+        /* ----------------------------------------------------
+           BATCH TRACKING (works for both queues)
+        ---------------------------------------------------- */
+        function batchEsc(v) { return String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        function batchState(q) { return q === 'extra' ? priorityStateExtra : priorityState; }
+        function batchSave(q) { q === 'extra' ? saveToCache_extra() : saveToCache(); }
+        function batchRender(q) { q === 'extra' ? renderPriorityTable_extra() : renderPriorityTable(); }
+
+        function batchCellHtml(item, q) {
+            const list = item.batches || [];
+            const chips = list.map((b, i) =>
+                `<span class="batch-chip" title="Logged ${batchEsc(b.at)}">#${batchEsc(b.num)}<button onclick="removeBatch('${q}','${item.id}',${i})" aria-label="Remove batch ${batchEsc(b.num)}">&times;</button></span>`
+            ).join('');
+            return `
+                <div class="batch-tally"><strong>${list.length}</strong> ${list.length === 1 ? 'batch' : 'batches'} run</div>
+                <div class="batch-add">
+                    <input type="text" id="batchNum_${q}_${item.id}" placeholder="Batch #" aria-label="Batch number"
+                        onkeydown="if(event.key==='Enter')addBatch('${q}','${item.id}')" />
+                    <button class="btn-apogee-green" onclick="addBatch('${q}','${item.id}')"><i class="fa-solid fa-plus"></i> Add batch</button>
+                </div>
+                ${chips ? `<div class="batch-chips">${chips}</div>` : ''}`;
+        }
+
+        function addBatch(q, id) {
+            const item = batchState(q).items.find(i => i.id === id);
+            if (!item) return;
+            item.batches = item.batches || [];
+            const input = document.getElementById(`batchNum_${q}_${id}`);
+            const num = (input && input.value.trim()) || String(item.batches.length + 1);
+            item.batches.push({ num, at: new Date().toLocaleString() });
+            batchSave(q);
+            batchRender(q);
+            playApogeeNote('G5');
+            showToast(`Batch #${num} logged for ${item.code}.`);
+            const next = document.getElementById(`batchNum_${q}_${id}`);
+            if (next) next.focus();
+        }
+
+        function removeBatch(q, id, idx) {
+            const item = batchState(q).items.find(i => i.id === id);
+            if (!item || !item.batches) return;
+            const [gone] = item.batches.splice(idx, 1);
+            batchSave(q);
+            batchRender(q);
+            playApogeeNote('A4');
+            showToast(`Batch #${gone.num} removed from ${item.code}.`);
+        }
+
+        function updateBatchStats() {
+            const count = st => st.items.reduce((n, i) => n + (i.batches ? i.batches.length : 0), 0);
+            const a = count(priorityState), b = count(priorityStateExtra);
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
+            set('statBatches', a); set('statBatches_extra', b); set('headerBatches', a + b);
+        }
+        const _renderMain = renderPriorityTable, _renderExtra = renderPriorityTable_extra;
+        renderPriorityTable = function () { _renderMain(); updateBatchStats(); };
+        renderPriorityTable_extra = function () { _renderExtra(); updateBatchStats(); };
 
         // Initialize App on Page Load
         window.addEventListener('DOMContentLoaded', () => {
