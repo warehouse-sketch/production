@@ -1655,20 +1655,25 @@
         function batchCellHtml(item, q) {
             const list = item.batches || [];
             const chips = list.map((b, i) => {
-                const label = (b.qty !== null && b.qty !== undefined) ? batchEsc(b.qty) : '#' + batchEsc(b.num);
-                return `<span class="batch-chip" title="Logged ${batchEsc(b.at)}">${label}<button onclick="removeBatch('${q}','${item.id}',${i})" aria-label="Remove batch">&times;</button></span>`;
+                const hasQty = (b.qty !== null && b.qty !== undefined);
+                const label = hasQty ? batchEsc(b.qty) : '&ndash;';
+                return `<span class="batch-chip" title="Batch ${batchEsc(b.num)} &middot; logged ${batchEsc(b.at)}">${label}<button onclick="removeBatch('${q}','${item.id}',${i})" aria-label="Remove batch ${batchEsc(b.num)}">&times;</button></span>`;
             }).join('');
             const totalTxt = hasBatchQty(item) ? ` &middot; <strong>${batchSum(item)}</strong> total` : '';
+            const size = (item.batchSize !== null && item.batchSize !== undefined) ? item.batchSize : '';
             return `
                 <div class="batch-tally"><strong>${list.length}</strong> ${list.length === 1 ? 'batch' : 'batches'} run${totalTxt}</div>
                 <div class="batch-add">
-                    <input type="text" id="batchNum_${q}_${item.id}" placeholder="Batch qty" aria-label="Batch quantity"
+                    <input type="text" id="batchNum_${q}_${item.id}" value="${batchEsc(size)}" placeholder="Qty per batch" aria-label="Quantity made in each batch"
                         onkeydown="if(event.key==='Enter')addBatch('${q}','${item.id}')" />
                     <button class="btn-apogee-green" onclick="addBatch('${q}','${item.id}')"><i class="fa-solid fa-plus"></i> Add batch</button>
                 </div>
-                ${chips ? `<div class="batch-chips">${chips}</div>` : ''}`;
+                ${chips ? `<div class="batch-chips">${chips}</div>
+                <button type="button" class="made-mode" style="margin-top:.4rem" onclick="clearBatches('${q}','${item.id}')">Clear batches</button>` : ''}`;
         }
 
+        // Each click adds one batch. The quantity stays in the box (and is remembered),
+        // so clicking again adds another batch of the same amount; type a new number to change it.
         function addBatch(q, id) {
             const item = batchState(q).items.find(i => i.id === id);
             if (!item) return;
@@ -1679,15 +1684,30 @@
             if (raw !== '') {
                 qty = Number(raw);
                 if (isNaN(qty)) { showToast('Enter a number for the batch quantity.'); return; }
+                item.batchSize = qty;
+            } else if (item.batchSize !== null && item.batchSize !== undefined) {
+                qty = item.batchSize;
             }
-            item.batches.push({ num: raw || String(item.batches.length + 1), qty, at: new Date().toLocaleString() });
+            item.batches.push({ num: String(item.batches.length + 1), qty, at: new Date().toLocaleString() });
             syncMade(item);
             batchSave(q);
             batchRender(q);
             playApogeeNote('G5');
-            showToast(qty !== null ? `Batch of ${qty} logged for ${item.code}.` : `Batch logged for ${item.code}.`);
+            showToast(qty !== null ? `Batch ${item.batches.length} (+${qty}) logged for ${item.code}.` : `Batch ${item.batches.length} logged for ${item.code}.`);
             const next = document.getElementById(`batchNum_${q}_${id}`);
-            if (next) next.focus();
+            if (next) { next.focus(); next.select(); }
+        }
+
+        function clearBatches(q, id) {
+            const item = batchState(q).items.find(i => i.id === id);
+            if (!item || !item.batches || !item.batches.length) return;
+            if (!confirm(`Clear all ${item.batches.length} batches for ${item.code}?`)) return;
+            item.batches = [];
+            syncMade(item);
+            batchSave(q);
+            batchRender(q);
+            playApogeeNote('G4');
+            showToast(`Batches cleared for ${item.code}.`);
         }
 
         function removeBatch(q, id, idx) {
