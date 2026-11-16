@@ -201,6 +201,12 @@
         .batch-chip button { border:0; background:none; color:#64748b; font-size:14px; line-height:1; padding:0 .3rem; cursor:pointer; }
         .batch-chip button:hover { color:var(--red); }
 
+        /* Made Actual: auto-total vs manual */
+        .made-wrap { display:flex; flex-direction:column; gap:.3rem; align-items:stretch; }
+        .made-mode { font:700 10px 'Trebuchet MS',Arial,sans-serif; letter-spacing:.04em; padding:.15rem .3rem; border-radius:5px; border:1px solid #94a3b8; background:#fff; color:#475569; cursor:pointer; }
+        .made-mode:hover { border-color:var(--blue); }
+        .made-mode.on { background:#15803d; border-color:#14532d; color:#fff; }
+
         /* Laser cards */
         .cut-card { border-top:3px solid var(--blue); border-radius:10px !important; }
         .cut-card:hover { border-color:var(--red); border-top-color:var(--red); }
@@ -384,7 +390,7 @@
                                     <th class="p-3 text-center">Max</th>
                                     <th class="p-3 text-center text-apogeeRed font-bold">Priority Run Qty</th>
                                     <th class="p-3 text-center text-amber-600 font-bold w-24">In Box</th>
-                                    <th class="p-3 text-center text-apogeeBlue font-bold w-24">Made Actual</th>
+                                    <th class="p-3 text-center text-apogeeBlue font-bold w-28">Made Actual</th>
                                     <th class="p-3 text-center text-red-600 font-bold w-24">Bad</th>
                                     <th class="p-3 text-center text-emerald-600 font-bold w-28">Time Taken</th>
                                     <th class="p-3 text-center font-bold w-60">Batches</th>
@@ -550,7 +556,7 @@
                                             <th class="p-3 text-center">Max</th>
                                             <th class="p-3 text-center text-apogeeRed font-bold">Priority Run Qty</th>
                                             <th class="p-3 text-center text-amber-600 font-bold w-24">In Box</th>
-                                            <th class="p-3 text-center text-apogeeBlue font-bold w-24">Made Actual</th>
+                                            <th class="p-3 text-center text-apogeeBlue font-bold w-28">Made Actual</th>
                                             <th class="p-3 text-center text-red-600 font-bold w-24">Bad</th>
                                             <th class="p-3 text-center text-emerald-600 font-bold w-28">Time Taken</th>
                                             <th class="p-3 text-center font-bold w-60">Batches</th>
@@ -909,15 +915,7 @@
                             class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border border-slate-300 rounded focus:border-amber-500 focus:outline-none"
                         />
                     </td>
-                    <td class="p-3 text-center">
-                        <input 
-                            type="text" 
-                            value="${item.madeActual || ''}" 
-                            placeholder="Made"
-                            oninput="updateMadeActual('${item.id}', this.value)"
-                            class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border border-slate-300 rounded focus:border-apogeeBlue focus:outline-none"
-                        />
-                    </td>
+                    <td class="p-3 text-center">${madeCellHtml(item, 'main')}</td>
                     <td class="p-3 text-center">
                         <input 
                             type="text" 
@@ -1282,15 +1280,7 @@
                             class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border border-slate-300 rounded focus:border-amber-500 focus:outline-none"
                         />
                     </td>
-                    <td class="p-3 text-center">
-                        <input 
-                            type="text" 
-                            value="${item.madeActual || ''}" 
-                            placeholder="Made"
-                            oninput="updateMadeActual_extra('${item.id}', this.value)"
-                            class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border border-slate-300 rounded focus:border-apogeeBlue focus:outline-none"
-                        />
-                    </td>
+                    <td class="p-3 text-center">${madeCellHtml(item, 'extra')}</td>
                     <td class="p-3 text-center">
                         <input 
                             type="text" 
@@ -1604,15 +1594,75 @@
         function batchSave(q) { q === 'extra' ? saveToCache_extra() : saveToCache(); }
         function batchRender(q) { q === 'extra' ? renderPriorityTable_extra() : renderPriorityTable(); }
 
+        /* ---- Batch quantities -> Made Actual total ---- */
+        function hasBatchQty(item) {
+            return (item.batches || []).some(b => b.qty !== null && b.qty !== undefined);
+        }
+        function batchSum(item) {
+            const s = (item.batches || []).reduce((n, b) => n + (Number(b.qty) || 0), 0);
+            return Math.round(s * 1000) / 1000;
+        }
+        // Auto unless the person has typed a manual total
+        function isMadeAuto(item) {
+            return item.madeAuto !== undefined ? item.madeAuto : !item.madeActual;
+        }
+        function syncMade(item) {
+            const auto = isMadeAuto(item);
+            item.madeAuto = auto;
+            if (auto) item.madeActual = hasBatchQty(item) ? String(batchSum(item)) : '';
+        }
+
+        function madeCellHtml(item, q) {
+            const auto = isMadeAuto(item);
+            return `
+                <div class="made-wrap">
+                    <input type="text" id="made_${q}_${item.id}" value="${batchEsc(item.madeActual || '')}" placeholder="Made"
+                        oninput="madeTyped('${q}','${item.id}',this.value)"
+                        class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border rounded focus:outline-none ${auto ? 'border-emerald-500' : 'border-slate-300'}" />
+                    <button type="button" id="madeMode_${q}_${item.id}" class="made-mode ${auto ? 'on' : ''}"
+                        onclick="toggleMadeAuto('${q}','${item.id}')"
+                        title="Click to switch between auto-total from batches and a manually typed total">${auto ? '&Sigma; AUTO' : 'MANUAL'}</button>
+                </div>`;
+        }
+
+        function madeTyped(q, id, val) {
+            const item = batchState(q).items.find(i => i.id === id);
+            if (!item) return;
+            item.madeActual = val;
+            item.madeAuto = false;               // typing = manual override
+            batchSave(q);
+            const btn = document.getElementById(`madeMode_${q}_${id}`);
+            const inp = document.getElementById(`made_${q}_${id}`);
+            if (btn) { btn.innerHTML = 'MANUAL'; btn.classList.remove('on'); }
+            if (inp) { inp.classList.remove('border-emerald-500'); inp.classList.add('border-slate-300'); }
+        }
+
+        function toggleMadeAuto(q, id) {
+            const item = batchState(q).items.find(i => i.id === id);
+            if (!item) return;
+            if (isMadeAuto(item)) {
+                item.madeAuto = false;
+            } else {
+                item.madeAuto = true;
+                if (hasBatchQty(item)) item.madeActual = String(batchSum(item));
+            }
+            batchSave(q);
+            batchRender(q);
+            playApogeeNote('E5');
+            showToast(item.madeAuto ? `${item.code}: total now adds up from batches.` : `${item.code}: total is now manual.`);
+        }
+
         function batchCellHtml(item, q) {
             const list = item.batches || [];
-            const chips = list.map((b, i) =>
-                `<span class="batch-chip" title="Logged ${batchEsc(b.at)}">#${batchEsc(b.num)}<button onclick="removeBatch('${q}','${item.id}',${i})" aria-label="Remove batch ${batchEsc(b.num)}">&times;</button></span>`
-            ).join('');
+            const chips = list.map((b, i) => {
+                const label = (b.qty !== null && b.qty !== undefined) ? batchEsc(b.qty) : '#' + batchEsc(b.num);
+                return `<span class="batch-chip" title="Logged ${batchEsc(b.at)}">${label}<button onclick="removeBatch('${q}','${item.id}',${i})" aria-label="Remove batch">&times;</button></span>`;
+            }).join('');
+            const totalTxt = hasBatchQty(item) ? ` &middot; <strong>${batchSum(item)}</strong> total` : '';
             return `
-                <div class="batch-tally"><strong>${list.length}</strong> ${list.length === 1 ? 'batch' : 'batches'} run</div>
+                <div class="batch-tally"><strong>${list.length}</strong> ${list.length === 1 ? 'batch' : 'batches'} run${totalTxt}</div>
                 <div class="batch-add">
-                    <input type="text" id="batchNum_${q}_${item.id}" placeholder="Batch #" aria-label="Batch number"
+                    <input type="text" id="batchNum_${q}_${item.id}" placeholder="Batch qty" aria-label="Batch quantity"
                         onkeydown="if(event.key==='Enter')addBatch('${q}','${item.id}')" />
                     <button class="btn-apogee-green" onclick="addBatch('${q}','${item.id}')"><i class="fa-solid fa-plus"></i> Add batch</button>
                 </div>
@@ -1624,12 +1674,18 @@
             if (!item) return;
             item.batches = item.batches || [];
             const input = document.getElementById(`batchNum_${q}_${id}`);
-            const num = (input && input.value.trim()) || String(item.batches.length + 1);
-            item.batches.push({ num, at: new Date().toLocaleString() });
+            const raw = input ? input.value.trim() : '';
+            let qty = null;
+            if (raw !== '') {
+                qty = Number(raw);
+                if (isNaN(qty)) { showToast('Enter a number for the batch quantity.'); return; }
+            }
+            item.batches.push({ num: raw || String(item.batches.length + 1), qty, at: new Date().toLocaleString() });
+            syncMade(item);
             batchSave(q);
             batchRender(q);
             playApogeeNote('G5');
-            showToast(`Batch #${num} logged for ${item.code}.`);
+            showToast(qty !== null ? `Batch of ${qty} logged for ${item.code}.` : `Batch logged for ${item.code}.`);
             const next = document.getElementById(`batchNum_${q}_${id}`);
             if (next) next.focus();
         }
@@ -1637,11 +1693,12 @@
         function removeBatch(q, id, idx) {
             const item = batchState(q).items.find(i => i.id === id);
             if (!item || !item.batches) return;
-            const [gone] = item.batches.splice(idx, 1);
+            item.batches.splice(idx, 1);
+            syncMade(item);
             batchSave(q);
             batchRender(q);
             playApogeeNote('A4');
-            showToast(`Batch #${gone.num} removed from ${item.code}.`);
+            showToast(`Batch removed from ${item.code}.`);
         }
 
         function updateBatchStats() {
