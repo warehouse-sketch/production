@@ -230,6 +230,10 @@
         .qd[open] .qd-chev { transform:rotate(180deg); }
         .qd-body { padding:1.1rem; background:#f7f9fc; border-radius:0 0 10px 10px; }
         .howto[open] .howto-chev { transform:rotate(180deg); }
+        .add-target { border:2px solid var(--blue); border-radius:7px; padding:.35rem .6rem; font:700 13px 'Trebuchet MS',Arial,sans-serif; color:var(--blue-dk); background:#fff; cursor:pointer; min-width:15rem; }
+        .add-target:focus { outline:2px solid #1d74b9; outline-offset:2px; }
+        @keyframes chipFlash { 0% { box-shadow:0 0 0 0 rgba(200,16,46,.65); background:#fff3b0; } 100% { box-shadow:0 0 0 10px rgba(200,16,46,0); background:#fff; } }
+        .ov-chip.flash { animation:chipFlash .9s ease-out 2; }
         .howto-chev { transition:transform .2s; }
 
         /* Laser cards */
@@ -248,7 +252,7 @@
                         Apogee Components
                     </h1>
                     <p class="text-xs text-blue-200 tracking-wide uppercase font-semibold mt-1">
-                        Production Priority Queue, Order Tracking & Laser Settings
+                        Production Lists, Order Tracking & Laser Settings
                     </p>
                 </div>
             </div>
@@ -275,7 +279,10 @@
         <!-- LISTS OVERVIEW + COPY EVERYTHING (rendered by JS) -->
         <div id="listsOverview"></div>
 
-        <!-- PRIORITY LISTS: Main, Extra, Lasercut, Vinyl, Print, Assemble (rendered by JS) -->
+        <!-- ADD ITEMS: one paste box + one manual entry, with a destination list dropdown (rendered by JS) -->
+        <div id="addPanel"></div>
+
+        <!-- PRODUCTION LISTS: Lasercut, Vinyl, Print, Assemble (rendered by JS) -->
         <div id="queuesContainer"></div>
 
         <!-- SECTION 3: LASER CUT SETTINGS & SPECIFICATIONS ARCHIVE -->
@@ -381,12 +388,10 @@
 
         /* ----------------------------------------------------
            PRIORITY LISTS - one shared engine for every list
-           (Main, Extra, Lasercut, Vinyl, Print, Assemble)
+           (Lasercut, Vinyl, Print, Assemble)
            To add another list later, just add a line to QUEUES.
         ---------------------------------------------------- */
         const QUEUES = [
-            { key: 'main',     short: 'Main',     title: 'Production Priority Queue',         icon: 'fa-list-check' },
-            { key: 'extra',    short: 'Extra',    title: 'Production Priority Queue - Extra', icon: 'fa-list-check' },
             { key: 'lasercut', short: 'Lasercut', title: 'Lasercut',                          icon: 'fa-bolt' },
             { key: 'vinyl',    short: 'Vinyl',    title: 'Vinyl',                             icon: 'fa-scissors' },
             { key: 'print',    short: 'Print',    title: 'Print',                             icon: 'fa-print' },
@@ -394,7 +399,7 @@
         ];
         const Q = {};   // key -> { date, items }
 
-        // Storage keys: main + extra keep their original keys so existing saved data still loads
+        // Storage keys per list (the old main-queue keys are no longer used)
         function qSuffix(key)   { return key === 'main' ? '' : '_' + key; }
         function qItemsKey(key) { return key === 'main' ? 'apogee_priority_items_v4' : `apogee_priority_items_${key}_v4`; }
         function qDateKey(key)  { return key === 'main' ? 'apogee_priority_date_v4'  : `apogee_priority_date_${key}_v4`; }
@@ -432,10 +437,38 @@
             showToast(`${qLabel(key)}Schedule date updated to ${val}`);
         }
 
+        // Destination list for the shared paste box + manual entry (remembered between visits)
+        const ADD_TARGET_KEY = 'apogee_add_target_v4';
+
+        function getAddTarget() {
+            const sel = document.getElementById('addTarget');
+            return (sel && Q[sel.value]) ? sel.value : QUEUES[0].key;
+        }
+
+        function setAddTarget(key) {
+            try { localStorage.setItem(ADD_TARGET_KEY, key); } catch(e) {}
+            playApogeeNote('D5');
+        }
+
+        function initAddTarget() {
+            let saved = QUEUES[0].key;
+            try { saved = localStorage.getItem(ADD_TARGET_KEY) || QUEUES[0].key; } catch(e) {}
+            const sel = document.getElementById('addTarget');
+            if (sel) sel.value = QUEUES.some(c => c.key === saved) ? saved : QUEUES[0].key;
+        }
+
+        function flashChip(key) {
+            const chip = document.getElementById('ov_' + key);
+            if (!chip) return;
+            chip.classList.remove('flash');
+            void chip.offsetWidth;
+            chip.classList.add('flash');
+        }
+
         // Paste parsing: unchanged logic (cols 0,1,5,6,7 = code, desc, avail, max, run qty)
-        function handleParseAndLoad(key) {
-            const s = qSuffix(key);
-            const rawText = document.getElementById('pasteInputArea' + s).value;
+        function handleParseAndLoad() {
+            const key = getAddTarget();
+            const rawText = document.getElementById('pasteInputArea').value;
             if (!rawText.trim()) {
                 showToast('Please paste data into the textarea first.');
                 return;
@@ -488,21 +521,22 @@
             if (addedCount > 0) {
                 saveQueue(key);
                 renderQueue(key);
-                document.getElementById('pasteInputArea' + s).value = '';
+                document.getElementById('pasteInputArea').value = '';
                 playApogeeNote('G5');
-                showToast(`Successfully loaded ${addedCount} ${qLabel(key)}priority item(s)!`);
+                flashChip(key);
+                showToast(`Successfully loaded ${addedCount} item(s) into ${qCfg(key).short}!`);
             } else {
                 showToast('Could not parse rows. Ensure tab-separated format.');
             }
         }
 
-        function handleManualAdd(key) {
-            const s = qSuffix(key);
-            const code = document.getElementById('manualCode' + s).value.trim();
-            const runQty = document.getElementById('manualRunQty' + s).value.trim();
-            const avail = document.getElementById('manualAvail' + s).value.trim() || '0';
-            const max = document.getElementById('manualMax' + s).value.trim() || '0';
-            const desc = document.getElementById('manualDesc' + s).value.trim() || 'Manual Entry Item';
+        function handleManualAdd() {
+            const key = getAddTarget();
+            const code = document.getElementById('manualCode').value.trim();
+            const runQty = document.getElementById('manualRunQty').value.trim();
+            const avail = document.getElementById('manualAvail').value.trim() || '0';
+            const max = document.getElementById('manualMax').value.trim() || '0';
+            const desc = document.getElementById('manualDesc').value.trim() || 'Manual Entry Item';
 
             if (!code) {
                 showToast('Please enter at least a Parent Code.');
@@ -527,11 +561,12 @@
             renderQueue(key);
 
             ['manualCode', 'manualRunQty', 'manualAvail', 'manualMax', 'manualDesc'].forEach(id => {
-                document.getElementById(id + s).value = '';
+                document.getElementById(id).value = '';
             });
 
             playApogeeNote('C5');
-            showToast(`Added item ${code} to ${qLabel(key)}priority queue.`);
+            flashChip(key);
+            showToast(`Added item ${code} to ${qCfg(key).short}.`);
         }
 
         // field: 'inBox' | 'badActual' | 'timeTaken'  (Made Actual is handled by madeTyped)
@@ -763,26 +798,6 @@
         function queueBodyHtml(cfg) {
             const k = cfg.key, s = qSuffix(k);
             return `
-                <div class="w-full mb-6">
-                    <details class="apogee-card howto">
-                        <summary class="apogee-card-header p-3.5 flex items-center justify-between cursor-pointer text-xs uppercase font-bold text-apogeeBlue hover:text-apogeeBlueDark transition select-none">
-                            <span class="flex items-center gap-2">
-                                <i class="fa-solid fa-circle-question text-apogeeBlue text-base"></i>
-                                <span>How to Use / Copy Data Instructions</span>
-                            </span>
-                            <i class="fa-solid fa-chevron-down howto-chev text-slate-500"></i>
-                        </summary>
-                        <div class="p-4 border-t border-slate-200 bg-slate-50 flex flex-col items-center">
-                            <p class="text-xs text-slate-600 mb-3 font-sans max-w-2xl text-center">
-                                Select and copy rows directly from https://apogeerockets.com/docs/Priority_Build_Report.html / Priority Build Report table, then paste into the box below and click <strong>Parse &amp; Load Data</strong>.
-                            </p>
-                            <div class="rounded overflow-hidden border border-slate-300 shadow-md max-w-4xl w-full">
-                                <img loading="lazy" src="https://raw.githubusercontent.com/warehouse-sketch/production/main/webfiles/howtouse.gif" alt="How to copy and paste priority queue data" class="w-full h-auto block" />
-                            </div>
-                        </div>
-                    </details>
-                </div>
-
                 <div class="w-full mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="apogee-card p-3.5 flex items-center justify-between">
                         <div class="text-xs font-bold font-heading text-slate-700 uppercase">
@@ -811,51 +826,6 @@
                         </button>
                         <button onclick="exportPriorityList('${k}')" class="btn-apogee-secondary px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5">
                             <i class="fa-solid fa-file-csv text-apogeeBlue"></i> CSV
-                        </button>
-                    </div>
-                </div>
-
-                <div class="w-full mb-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <div class="apogee-card p-4 flex flex-col justify-between">
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between text-xs font-heading font-bold mb-2">
-                                <span class="text-apogeeBlue uppercase"><i class="fa-solid fa-paste mr-1"></i> Paste Priority Data (Tab-Separated)</span>
-                            </div>
-                            <textarea
-                                id="pasteInputArea${s}"
-                                rows="4"
-                                placeholder="Paste copied Priority Build Report / inventory rows here..."
-                                class="w-full bg-slate-50 p-2.5 text-xs font-mono text-slate-800 placeholder-slate-400 resize-y"
-                            ></textarea>
-                        </div>
-                        <div class="flex items-center justify-between pt-3 border-t border-slate-100 mt-3">
-                            <div class="text-[11px] text-slate-500 font-sans">
-                                Auto-extracts Parent Code, Desc, Avail, Max, Run Qty.
-                            </div>
-                            <button onclick="handleParseAndLoad('${k}')" class="btn-apogee-primary px-4 py-2 font-bold text-xs rounded shadow transition active:scale-95 flex items-center gap-2">
-                                <i class="fa-solid fa-bolt text-apogeeYellow"></i>
-                                <span>Parse &amp; Load Data</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="apogee-card p-4 flex flex-col justify-between">
-                        <div>
-                            <div class="text-xs font-heading font-bold text-apogeeBlue uppercase mb-2">
-                                <i class="fa-solid fa-circle-plus mr-1"></i> Manual Item Entry
-                            </div>
-                            <div class="grid grid-cols-2 gap-2 mb-2">
-                                <input type="text" id="manualCode${s}" placeholder="Code (e.g. 10067)" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
-                                <input type="text" id="manualRunQty${s}" placeholder="Run Qty" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
-                            </div>
-                            <div class="grid grid-cols-2 gap-2 mb-2">
-                                <input type="text" id="manualAvail${s}" placeholder="Avail" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
-                                <input type="text" id="manualMax${s}" placeholder="Max" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
-                            </div>
-                            <input type="text" id="manualDesc${s}" placeholder="Description" class="w-full bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800 mb-2" />
-                        </div>
-                        <button onclick="handleManualAdd('${k}')" class="btn-apogee-secondary w-full py-2 font-bold text-xs rounded transition active:scale-95 flex items-center justify-center gap-1.5 border-slate-300 mt-2">
-                            <i class="fa-solid fa-plus text-apogeeBlue"></i> Add Item to Queue
                         </button>
                     </div>
                 </div>
@@ -901,25 +871,91 @@
                 </div>`;
         }
 
+        function addPanelHtml() {
+            const opts = QUEUES.map(c =>
+                `<option value="${c.key}">${batchEsc(c.key === 'main' ? 'Main - ' + c.title : c.title)}</option>`).join('');
+            return `
+                <div class="apogee-card mb-8">
+                    <div class="apogee-card-header px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+                        <div class="font-bold uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-circle-plus text-apogeeBlue"></i> Add Items
+                        </div>
+                        <label class="flex items-center gap-2 font-bold uppercase text-slate-700">
+                            <i class="fa-solid fa-arrow-right text-apogeeRed"></i> Add to list:
+                            <select id="addTarget" class="add-target" onchange="setAddTarget(this.value)">${opts}</select>
+                        </label>
+                    </div>
+                    <div class="p-4">
+                        <div class="w-full mb-4">
+                            <details class="apogee-card howto">
+                                <summary class="apogee-card-header p-3.5 flex items-center justify-between cursor-pointer text-xs uppercase font-bold text-apogeeBlue hover:text-apogeeBlueDark transition select-none">
+                                    <span class="flex items-center gap-2">
+                                        <i class="fa-solid fa-circle-question text-apogeeBlue text-base"></i>
+                                        <span>How to Use / Copy Data Instructions</span>
+                                    </span>
+                                    <i class="fa-solid fa-chevron-down howto-chev text-slate-500"></i>
+                                </summary>
+                                <div class="p-4 border-t border-slate-200 bg-slate-50 flex flex-col items-center">
+                                    <p class="text-xs text-slate-600 mb-3 font-sans max-w-2xl text-center">
+                                        Select and copy rows directly from https://apogeerockets.com/docs/Priority_Build_Report.html / Priority Build Report table, then paste into the box below and click <strong>Parse &amp; Load Data</strong>.
+                                    </p>
+                                    <div class="rounded overflow-hidden border border-slate-300 shadow-md max-w-4xl w-full">
+                                        <img loading="lazy" src="https://raw.githubusercontent.com/warehouse-sketch/production/main/webfiles/howtouse.gif" alt="How to copy and paste priority queue data" class="w-full h-auto block" />
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+
+                        <div class="w-full grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="apogee-card p-4 flex flex-col justify-between">
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between text-xs font-heading font-bold mb-2">
+                                        <span class="text-apogeeBlue uppercase"><i class="fa-solid fa-paste mr-1"></i> Paste Priority Data (Tab-Separated)</span>
+                                    </div>
+                                    <textarea
+                                        id="pasteInputArea"
+                                        rows="4"
+                                        placeholder="Paste copied Priority Build Report / inventory rows here..."
+                                        class="w-full bg-slate-50 p-2.5 text-xs font-mono text-slate-800 placeholder-slate-400 resize-y"
+                                    ></textarea>
+                                </div>
+                                <div class="flex items-center justify-between pt-3 border-t border-slate-100 mt-3">
+                                    <div class="text-[11px] text-slate-500 font-sans">
+                                        Auto-extracts Parent Code, Desc, Avail, Max, Run Qty.
+                                    </div>
+                                    <button onclick="handleParseAndLoad()" class="btn-apogee-primary px-4 py-2 font-bold text-xs rounded shadow transition active:scale-95 flex items-center gap-2">
+                                        <i class="fa-solid fa-bolt text-apogeeYellow"></i>
+                                        <span>Parse &amp; Load Data</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="apogee-card p-4 flex flex-col justify-between">
+                                <div>
+                                    <div class="text-xs font-heading font-bold text-apogeeBlue uppercase mb-2">
+                                        <i class="fa-solid fa-circle-plus mr-1"></i> Manual Item Entry
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2 mb-2">
+                                        <input type="text" id="manualCode" placeholder="Code (e.g. 10067)" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                                        <input type="text" id="manualRunQty" placeholder="Run Qty" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2 mb-2">
+                                        <input type="text" id="manualAvail" placeholder="Avail" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                                        <input type="text" id="manualMax" placeholder="Max" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                                    </div>
+                                    <input type="text" id="manualDesc" placeholder="Description" class="w-full bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800 mb-2" />
+                                </div>
+                                <button onclick="handleManualAdd()" class="btn-apogee-secondary w-full py-2 font-bold text-xs rounded transition active:scale-95 flex items-center justify-center gap-1.5 border-slate-300 mt-2">
+                                    <i class="fa-solid fa-plus text-apogeeBlue"></i> Add Item to Queue
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
         function queueWrapperHtml(cfg) {
             const k = cfg.key;
-            if (k === 'main') {
-                return `
-                <div class="mb-10" id="queue_main">
-                    <div class="flex items-center justify-between mb-4 pb-2 border-b-2 border-apogeeBlue">
-                        <h2 class="font-heading text-lg font-bold text-apogeeBlue uppercase flex items-center gap-2">
-                            <i class="fa-solid ${cfg.icon}"></i> ${cfg.title}
-                        </h2>
-                    </div>
-                    ${queueBodyHtml(cfg)}
-                </div>
-                <div class="flex items-center justify-between mb-4 pb-2 border-b-2 border-apogeeBlue">
-                    <h2 class="font-heading text-lg font-bold text-apogeeBlue uppercase flex items-center gap-2">
-                        <i class="fa-solid fa-layer-group"></i> More Production Lists
-                    </h2>
-                    <span class="text-xs text-slate-500 font-sans">Hidden by default &mdash; click a list to open it</span>
-                </div>`;
-            }
             return `
                 <details class="qd apogee-card" id="queue_${k}">
                     <summary>
@@ -981,7 +1017,15 @@
 
         function buildQueues() {
             document.getElementById('listsOverview').innerHTML = overviewHtml();
-            document.getElementById('queuesContainer').innerHTML = QUEUES.map(queueWrapperHtml).join('');
+            document.getElementById('addPanel').innerHTML = addPanelHtml();
+            const heading = `
+                <div class="flex items-center justify-between mb-4 pb-2 border-b-2 border-apogeeBlue">
+                    <h2 class="font-heading text-lg font-bold text-apogeeBlue uppercase flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group"></i> Production Lists
+                    </h2>
+                    <span class="text-xs text-slate-500 font-sans">Hidden by default &mdash; click a list to open it</span>
+                </div>`;
+            document.getElementById('queuesContainer').innerHTML = heading + QUEUES.map(queueWrapperHtml).join('');
         }
 
 
@@ -1328,6 +1372,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             buildQueues();
             QUEUES.forEach(c => loadQueue(c.key));
+            initAddTarget();
             renderCutGrid();
         });
     </script>
