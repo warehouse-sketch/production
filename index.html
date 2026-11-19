@@ -285,6 +285,32 @@
         <!-- PRODUCTION LISTS: Lasercut, Vinyl, Print, Assemble (rendered by JS) -->
         <div id="queuesContainer"></div>
 
+        <!-- CHECKLIST -->
+        <div class="mb-12 mt-8">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b-2 border-apogeeBlue">
+                <h2 class="font-heading text-lg font-bold text-apogeeBlue uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-clipboard-check"></i> Checklist
+                </h2>
+                <span class="text-xs text-slate-500 font-sans" id="checklistCount">0 of 0 done</span>
+            </div>
+            <div class="apogee-card overflow-hidden">
+                <div class="apogee-card-header px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <div class="flex items-center gap-2 flex-1 min-w-[16rem]">
+                        <input type="text" id="checklistInput" placeholder="Add a checklist item and press Enter..."
+                            onkeydown="if(event.key==='Enter')addChecklistItem()"
+                            class="w-full bg-white text-slate-800 text-xs px-3 py-2" />
+                        <button onclick="addChecklistItem()" class="btn-apogee-primary px-3 py-2 rounded text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap">
+                            <i class="fa-solid fa-plus text-apogeeYellow"></i> Add
+                        </button>
+                    </div>
+                    <button onclick="clearChecklist()" class="btn-apogee-red px-3 py-2 rounded text-xs font-bold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-trash-can"></i> Clear All
+                    </button>
+                </div>
+                <ul id="checklistItems" class="divide-y divide-slate-200"></ul>
+            </div>
+        </div>
+
         <!-- SECTION 3: LASER CUT SETTINGS & SPECIFICATIONS ARCHIVE -->
         <div class="mb-12">
             <div class="flex items-center justify-between mb-4 pb-2 border-b-2 border-apogeeBlue">
@@ -995,6 +1021,9 @@
                             <button onclick="setAllQueuesOpen(false)" class="btn-apogee-secondary px-3 py-2 rounded text-xs font-bold transition flex items-center gap-1.5">
                                 <i class="fa-solid fa-angles-up text-apogeeBlue"></i> Collapse all
                             </button>
+                            <button onclick="clearAllQueues()" class="btn-apogee-red px-4 py-2 rounded text-xs font-bold transition flex items-center gap-2" title="Remove every item from every production list">
+                                <i class="fa-solid fa-trash-can"></i> Clear ALL Lists
+                            </button>
                         </div>
                     </div>
                     <div class="ov-chips">${chips}</div>
@@ -1368,12 +1397,107 @@
             setTxt('ovTotalQty', allQty);
         }
 
+        /* ----------------------------------------------------
+           CLEAR ALL PRODUCTION LISTS
+        ---------------------------------------------------- */
+        function clearAllQueues() {
+            const total = QUEUES.reduce((n, c) => n + (Q[c.key] ? Q[c.key].items.length : 0), 0);
+            if (total === 0) { showToast('All production lists are already empty.'); return; }
+            if (!confirm(`Clear ALL ${total} item(s) from every production list (${QUEUES.map(c => c.short).join(', ')})? This cannot be undone.`)) return;
+            QUEUES.forEach(c => {
+                Q[c.key].items = [];
+                saveQueue(c.key);
+                renderQueue(c.key);
+            });
+            playApogeeNote('G4');
+            showToast('All production lists cleared.');
+        }
+
+        /* ----------------------------------------------------
+           CHECKLIST
+        ---------------------------------------------------- */
+        const CHECKLIST_KEY = 'apogee_checklist_v1';
+        let checklist = [];
+
+        function loadChecklist() {
+            try {
+                const saved = localStorage.getItem(CHECKLIST_KEY);
+                if (saved) checklist = JSON.parse(saved) || [];
+            } catch(e) { checklist = []; }
+            renderChecklist();
+        }
+
+        function saveChecklist() {
+            try { localStorage.setItem(CHECKLIST_KEY, JSON.stringify(checklist)); } catch(e) {}
+        }
+
+        function addChecklistItem() {
+            const input = document.getElementById('checklistInput');
+            const text = input.value.trim();
+            if (!text) { showToast('Type a checklist item first.'); return; }
+            checklist.push({ id: 'chk_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5), text, done: false });
+            saveChecklist();
+            renderChecklist();
+            input.value = '';
+            input.focus();
+            playApogeeNote('C5');
+        }
+
+        function toggleChecklistItem(id) {
+            const item = checklist.find(i => i.id === id);
+            if (!item) return;
+            item.done = !item.done;
+            saveChecklist();
+            renderChecklist();
+            if (item.done) playApogeeNote('C6');
+        }
+
+        function deleteChecklistItem(id) {
+            checklist = checklist.filter(i => i.id !== id);
+            saveChecklist();
+            renderChecklist();
+            playApogeeNote('A4');
+            showToast('Checklist item removed.');
+        }
+
+        function clearChecklist() {
+            if (checklist.length === 0) { showToast('The checklist is already empty.'); return; }
+            if (!confirm(`Clear all ${checklist.length} checklist item(s)?`)) return;
+            checklist = [];
+            saveChecklist();
+            renderChecklist();
+            playApogeeNote('G4');
+            showToast('Checklist cleared.');
+        }
+
+        function renderChecklist() {
+            const ul = document.getElementById('checklistItems');
+            if (!ul) return;
+            if (checklist.length === 0) {
+                ul.innerHTML = '<li class="p-4 text-xs text-slate-400 text-center font-sans">No checklist items yet.</li>';
+            } else {
+                ul.innerHTML = checklist.map(i => `
+                    <li class="priority-row flex items-center gap-3 px-4 py-2.5 ${i.done ? 'completed' : ''}">
+                        <input type="checkbox" ${i.done ? 'checked' : ''} onchange="toggleChecklistItem('${i.id}')"
+                            class="rounded border-slate-300 text-apogeeBlue cursor-pointer w-4 h-4" />
+                        <span class="priority-text flex-1 text-sm text-slate-800">${batchEsc(i.text)}</span>
+                        <button onclick="deleteChecklistItem('${i.id}')" class="text-slate-400 hover:text-apogeeRed transition p-1" aria-label="Delete item" title="Delete item">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </li>`).join('');
+            }
+            const done = checklist.filter(i => i.done).length;
+            const cnt = document.getElementById('checklistCount');
+            if (cnt) cnt.innerText = `${done} of ${checklist.length} done`;
+        }
+
         // Initialize App on Page Load
         window.addEventListener('DOMContentLoaded', () => {
             buildQueues();
             QUEUES.forEach(c => loadQueue(c.key));
             initAddTarget();
             renderCutGrid();
+            loadChecklist();
         });
     </script>
 </body>
