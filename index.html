@@ -262,10 +262,6 @@
                     <span id="sys-clock">00:00:00</span>
                 </div>
                 <div class="flex items-center space-x-2 text-xs font-mono bg-black/20 px-3 py-1.5 rounded border border-white/10">
-                    <i class="fa-solid fa-cloud text-apogeeYellow"></i>
-                    <span>STATUS: CACHED TO BROWSER STORAGE</span>
-                </div>
-                <div class="flex items-center space-x-2 text-xs font-mono bg-black/20 px-3 py-1.5 rounded border border-white/10">
                     <i class="fa-solid fa-boxes-stacked text-apogeeYellow"></i>
                     <span>BATCHES RUN: <strong id="headerBatches" class="text-apogeeYellow">0</strong></span>
                 </div>
@@ -432,8 +428,22 @@
         function qCfg(key)      { return QUEUES.find(c => c.key === key); }
         function qLabel(key)    { return key === 'main' ? '' : qCfg(key).short + ' '; }
 
+        // Today's date in the user's local time zone (YYYY-MM-DD)
+        function localDateStr() {
+            const d = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+        }
+
+        // Adding an item stamps the list's Schedule Date with today's local date
+        function stampQueueDate(key) {
+            Q[key].date = localDateStr();
+            const dateInput = document.getElementById('priorityDateInput' + qSuffix(key));
+            if (dateInput) dateInput.value = Q[key].date;
+        }
+
         function loadQueue(key) {
-            Q[key] = { date: new Date().toISOString().split('T')[0], items: [] };
+            Q[key] = { date: localDateStr(), items: [] };
             try {
                 const savedDate = localStorage.getItem(qDateKey(key));
                 if (savedDate) Q[key].date = savedDate;
@@ -545,6 +555,7 @@
             });
 
             if (addedCount > 0) {
+                stampQueueDate(key);
                 saveQueue(key);
                 renderQueue(key);
                 document.getElementById('pasteInputArea').value = '';
@@ -583,6 +594,7 @@
                 completed: false
             });
 
+            stampQueueDate(key);
             saveQueue(key);
             renderQueue(key);
 
@@ -767,16 +779,16 @@
             copyTextToClipboard(copyText, `Copied ${Q[key].items.length} item(s) from ${qLabel(key)}queue formatted for Google Sheets!`);
         }
 
-        // Copies every row from every list, in list order, using the exact same row format
+        // Copies only the checked-off (completed) rows from every list, in list order, using the exact same row format
         function copyAllForGoogleSheets() {
             const rows = [];
             let listsUsed = 0;
             QUEUES.forEach(c => {
-                const items = Q[c.key].items;
+                const items = Q[c.key].items.filter(i => i.completed);
                 if (items.length) { listsUsed++; items.forEach(i => rows.push(sheetsRow(i))); }
             });
             if (rows.length === 0) {
-                showToast('No items in any list to copy.');
+                showToast('No completed items to copy. Check off items first.');
                 return;
             }
             copyTextToClipboard(rows.join('\n'), `Copied ${rows.length} item(s) from ${listsUsed} list(s) formatted for Google Sheets!`);
@@ -1012,8 +1024,8 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-2 flex-wrap">
-                            <button onclick="copyAllForGoogleSheets()" class="btn-apogee-green px-4 py-2 rounded text-xs font-bold transition flex items-center gap-2" title="Copy every row from every list, in Google Sheets format">
-                                <i class="fa-solid fa-copy"></i> Copy ALL Lists to Sheets
+                            <button onclick="copyAllForGoogleSheets()" class="btn-apogee-green px-4 py-2 rounded text-xs font-bold transition flex items-center gap-2" title="Copy every checked-off (completed) row from every list, in Google Sheets format">
+                                <i class="fa-solid fa-copy"></i> Copy ALL Completed to Sheets
                             </button>
                             <button onclick="setAllQueuesOpen(true)" class="btn-apogee-secondary px-3 py-2 rounded text-xs font-bold transition flex items-center gap-1.5">
                                 <i class="fa-solid fa-angles-down text-apogeeBlue"></i> Expand all
