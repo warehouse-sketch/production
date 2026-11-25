@@ -236,6 +236,9 @@
         .ov-chip.flash { animation:chipFlash .9s ease-out 2; }
         .howto-chev { transition:transform .2s; }
 
+        .batch-add { flex-wrap:wrap; }
+        .batch-add input.batch-time { width:6.5rem; }
+
         /* Laser cards */
         .cut-card { border-top:3px solid var(--blue); border-radius:10px !important; }
         .cut-card:hover { border-color:var(--red); border-top-color:var(--red); }
@@ -414,10 +417,13 @@
            To add another list later, just add a line to QUEUES.
         ---------------------------------------------------- */
         const QUEUES = [
-            { key: 'lasercut', short: 'Lasercut', title: 'Lasercut',                          icon: 'fa-bolt' },
-            { key: 'vinyl',    short: 'Vinyl',    title: 'Vinyl',                             icon: 'fa-scissors' },
-            { key: 'print',    short: 'Print',    title: 'Print',                             icon: 'fa-print' },
-            { key: 'assemble', short: 'Assemble', title: 'Assemble',                          icon: 'fa-screwdriver-wrench' }
+            { key: 'lasercut', short: 'Lasercut',   title: 'Lasercut',   icon: 'fa-bolt' },
+            { key: 'vinyl',    short: 'Vinyl',      title: 'Vinyl',      icon: 'fa-scissors' },
+            { key: 'assemble', short: 'Assemble',   title: 'Assemble',   icon: 'fa-screwdriver-wrench' },
+            { key: 'print',    short: 'Print',      title: 'Print',      icon: 'fa-print' },
+            { key: 'print3d',  short: '3D Print',   title: '3D Print',   icon: 'fa-cube' },
+            { key: 'vacform',  short: 'Vac-Form',   title: 'Vac-Form',   icon: 'fa-wind' },
+            { key: 'misc',     short: 'Misc Build', title: 'Misc Build', icon: 'fa-toolbox' }
         ];
         const Q = {};   // key -> { date, items }
 
@@ -694,15 +700,7 @@
                             class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border border-slate-300 rounded focus:border-red-500 focus:outline-none"
                         />
                     </td>
-                    <td class="p-3 text-center">
-                        <input
-                            type="text"
-                            value="${batchEsc(item.timeTaken || '')}"
-                            placeholder="Time Taken"
-                            oninput="updateField('${key}','${item.id}','timeTaken',this.value)"
-                            class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border border-slate-300 rounded focus:border-emerald-500 focus:outline-none"
-                        />
-                    </td>
+                    <td class="p-3 text-center">${timeCellHtml(item, key)}</td>
                     <td class="p-3 batch-cell">${batchCellHtml(item, key)}</td>
                     <td class="p-3 text-center">
                         <button onclick="deleteItem('${key}','${item.id}')" class="text-slate-400 hover:text-apogeeRed transition p-1">
@@ -1272,10 +1270,73 @@
         function isMadeAuto(item) {
             return item.madeAuto !== undefined ? item.madeAuto : !item.madeActual;
         }
+        // Time per batch is typed as H:MM:SS (or M:SS, or plain seconds)
+        function parseTime(raw) {
+            const t = String(raw).trim();
+            if (!/^\d+(:\d{1,2}){0,2}$/.test(t)) return NaN;
+            const p = t.split(':').map(Number);
+            if (p.length > 1 && p[p.length - 1] > 59) return NaN;
+            if (p.length === 3 && p[1] > 59) return NaN;
+            if (p.length === 1) return p[0];
+            if (p.length === 2) return p[0] * 60 + p[1];
+            return p[0] * 3600 + p[1] * 60 + p[2];
+        }
+        function fmtTime(total) {
+            total = Math.round(total);
+            const h = Math.floor(total / 3600), m = Math.floor(total % 3600 / 60), s = total % 60;
+            return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+        function hasBatchTime(item) { return (item.batches || []).some(b => b.secs !== null && b.secs !== undefined); }
+        function batchSecs(item) { return (item.batches || []).reduce((n, b) => n + (Number(b.secs) || 0), 0); }
+        function isTimeAuto(item) { return item.timeAuto !== undefined ? item.timeAuto : !item.timeTaken; }
+
         function syncMade(item) {
             const auto = isMadeAuto(item);
             item.madeAuto = auto;
             if (auto) item.madeActual = hasBatchQty(item) ? String(batchSum(item)) : '';
+            const tAuto = isTimeAuto(item);
+            item.timeAuto = tAuto;
+            if (tAuto) item.timeTaken = hasBatchTime(item) ? fmtTime(batchSecs(item)) : '';
+        }
+
+        function timeCellHtml(item, q) {
+            const auto = isTimeAuto(item);
+            return `
+                <div class="made-wrap">
+                    <input type="text" id="time_${q}_${item.id}" value="${batchEsc(item.timeTaken || '')}" placeholder="H:MM:SS"
+                        oninput="timeTyped('${q}','${item.id}',this.value)"
+                        class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border rounded focus:outline-none ${auto ? 'border-emerald-500' : 'border-slate-300'}" />
+                    <button type="button" id="timeMode_${q}_${item.id}" class="made-mode ${auto ? 'on' : ''}"
+                        onclick="toggleTimeAuto('${q}','${item.id}')"
+                        title="Click to switch between auto-total from batches and a manually typed time">${auto ? '&Sigma; AUTO' : 'MANUAL'}</button>
+                </div>`;
+        }
+
+        function timeTyped(q, id, val) {
+            const item = batchState(q).items.find(i => i.id === id);
+            if (!item) return;
+            item.timeTaken = val;
+            item.timeAuto = false;
+            batchSave(q);
+            const btn = document.getElementById(`timeMode_${q}_${id}`);
+            const inp = document.getElementById(`time_${q}_${id}`);
+            if (btn) { btn.innerHTML = 'MANUAL'; btn.classList.remove('on'); }
+            if (inp) { inp.classList.remove('border-emerald-500'); inp.classList.add('border-slate-300'); }
+        }
+
+        function toggleTimeAuto(q, id) {
+            const item = batchState(q).items.find(i => i.id === id);
+            if (!item) return;
+            if (isTimeAuto(item)) {
+                item.timeAuto = false;
+            } else {
+                item.timeAuto = true;
+                if (hasBatchTime(item)) item.timeTaken = fmtTime(batchSecs(item));
+            }
+            batchSave(q);
+            batchRender(q);
+            playApogeeNote('E5');
+            showToast(item.timeAuto ? `${item.code}: time now adds up from batches.` : `${item.code}: time is now manual.`);
         }
 
         function madeCellHtml(item, q) {
@@ -1321,16 +1382,22 @@
         function batchCellHtml(item, q) {
             const list = item.batches || [];
             const chips = list.map((b, i) => {
-                const hasQty = (b.qty !== null && b.qty !== undefined);
-                const label = hasQty ? batchEsc(b.qty) : '&ndash;';
+                const parts = [];
+                if (b.qty !== null && b.qty !== undefined) parts.push(batchEsc(b.qty));
+                if (b.secs !== null && b.secs !== undefined) parts.push(fmtTime(b.secs));
+                const label = parts.length ? parts.join(' &middot; ') : '&ndash;';
                 return `<span class="batch-chip" title="Batch ${batchEsc(b.num)} &middot; logged ${batchEsc(b.at)}">${label}<button onclick="removeBatch('${q}','${item.id}',${i})" aria-label="Remove batch ${batchEsc(b.num)}">&times;</button></span>`;
             }).join('');
-            const totalTxt = hasBatchQty(item) ? ` &middot; <strong>${batchSum(item)}</strong> total` : '';
+            const totalTxt = (hasBatchQty(item) ? ` &middot; <strong>${batchSum(item)}</strong> total` : '')
+                           + (hasBatchTime(item) ? ` &middot; <strong>${fmtTime(batchSecs(item))}</strong> time` : '');
             const size = (item.batchSize !== null && item.batchSize !== undefined) ? item.batchSize : '';
+            const tm = item.batchTime || '';
             return `
                 <div class="batch-tally"><strong>${list.length}</strong> ${list.length === 1 ? 'batch' : 'batches'} run${totalTxt}</div>
                 <div class="batch-add">
                     <input type="text" id="batchNum_${q}_${item.id}" value="${batchEsc(size)}" placeholder="Qty per batch" aria-label="Quantity made in each batch"
+                        onkeydown="if(event.key==='Enter')addBatch('${q}','${item.id}')" />
+                    <input type="text" class="batch-time" id="batchTime_${q}_${item.id}" value="${batchEsc(tm)}" placeholder="H:MM:SS" aria-label="Time per batch"
                         onkeydown="if(event.key==='Enter')addBatch('${q}','${item.id}')" />
                     <button class="btn-apogee-green" onclick="addBatch('${q}','${item.id}')"><i class="fa-solid fa-plus"></i> Add batch</button>
                 </div>
@@ -1338,15 +1405,17 @@
                 <button type="button" class="made-mode" style="margin-top:.4rem" onclick="clearBatches('${q}','${item.id}')">Clear batches</button>` : ''}`;
         }
 
-        // Each click adds one batch. The quantity stays in the box (and is remembered),
-        // so clicking again adds another batch of the same amount; type a new number to change it.
+        // Each click adds one batch. Quantity and time stay in their boxes (and are remembered),
+        // so clicking again adds another identical batch; type new values to change them.
         function addBatch(q, id) {
             const item = batchState(q).items.find(i => i.id === id);
             if (!item) return;
             item.batches = item.batches || [];
             const input = document.getElementById(`batchNum_${q}_${id}`);
+            const tInput = document.getElementById(`batchTime_${q}_${id}`);
             const raw = input ? input.value.trim() : '';
-            let qty = null;
+            const tRaw = tInput ? tInput.value.trim() : '';
+            let qty = null, secs = null;
             if (raw !== '') {
                 qty = Number(raw);
                 if (isNaN(qty)) { showToast('Enter a number for the batch quantity.'); return; }
@@ -1354,12 +1423,21 @@
             } else if (item.batchSize !== null && item.batchSize !== undefined) {
                 qty = item.batchSize;
             }
-            item.batches.push({ num: String(item.batches.length + 1), qty, at: new Date().toLocaleString() });
+            if (tRaw !== '') {
+                secs = parseTime(tRaw);
+                if (isNaN(secs)) { showToast('Enter the time like 1:21:22 (h:mm:ss).'); return; }
+                item.batchTime = tRaw;
+            } else if (item.batchTime) {
+                secs = parseTime(item.batchTime);
+                if (isNaN(secs)) secs = null;
+            }
+            item.batches.push({ num: String(item.batches.length + 1), qty, secs, at: new Date().toLocaleString() });
             syncMade(item);
             batchSave(q);
             batchRender(q);
             playApogeeNote('G5');
-            showToast(qty !== null ? `Batch ${item.batches.length} (+${qty}) logged for ${item.code}.` : `Batch ${item.batches.length} logged for ${item.code}.`);
+            const bits = [qty !== null ? '+' + qty : '', secs !== null ? '+' + fmtTime(secs) : ''].filter(Boolean).join(', ');
+            showToast(`Batch ${item.batches.length} ${bits ? '(' + bits + ') ' : ''}logged for ${item.code}.`);
             const next = document.getElementById(`batchNum_${q}_${id}`);
             if (next) { next.focus(); next.select(); }
         }
