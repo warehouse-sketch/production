@@ -598,7 +598,7 @@
             set('dhLoaded', META.loadedAt ? 'List pasted at ' + new Date(META.loadedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '');
         }
         const SYNC_TEXT = {
-            live: ['sync-live', 'Online...'], saving: ['sync-wait', 'Saving...'], connecting: ['sync-wait', 'Connecting...'],
+            live: ['sync-live', 'Online'], saving: ['sync-wait', 'Saving...'], connecting: ['sync-wait', 'Connecting...'],
             offline: ['sync-bad', 'Offline - changes sync when you reconnect'], error: ['sync-bad', 'Sync problem'],
             unconfigured: ['sync-bad', 'Not connected - changes are NOT saved'], nocloud: ['sync-bad', 'Could not load Firebase - changes are NOT saved']
         };
