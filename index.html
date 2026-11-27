@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apogee Components - Production Hub & Laser Cut Settings</title>
+    <link rel="icon" type="image/svg+xml" href="https://apogeerockets.com/favicon.ico">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        apogeeBlue: '#005596',
+                        apogeeBlueDark: '#003d6d',
+                        apogeeBlueLight: '#1d74b9',
+                        apogeeRed: '#c8102e',
+                        apogeeRedDark: '#990011',
+                        apogeeYellow: '#ffcc00',
+                        apogeeGrayBg: '#f4f6f8',
+                        apogeePanelBg: '#ffffff',
+                        apogeeBorder: '#cbd5e1',
+                        apogeeHeaderBg: '#1e293b',
+                        apogeeRowHover: '#f0f7ff',
+                        apogeeSuccess: '#15803d'
+                    },
+                    fontFamily: {
+                        sans: ['Arial', 'Helvetica', 'sans-serif'],
+                        heading: ['Trebuchet MS', 'Arial', 'sans-serif'],
+                        mono: ['Courier New', 'Courier', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Tone.js for audio synthesis feedback -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f4f6f8;
+            color: #1f2937;
+        }
+
+        /* Header gradient imitating classic e-commerce banner */
+        .apogee-header {
+            background: linear-gradient(180deg, #005596 0%, #003d6d 100%);
+            border-bottom: 4px solid #c8102e;
+        }
+
+        .apogee-card {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .apogee-card-header {
+            background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+            border-bottom: 1px solid #cbd5e1;
+            color: #0f172a;
+            font-family: 'Trebuchet MS', Arial, sans-serif;
+            font-weight: bold;
+        }
+
+        .btn-apogee-primary {
+            background: linear-gradient(180deg, #005596 0%, #003d6d 100%);
+            color: white;
+            border: 1px solid #002b4d;
+        }
+        .btn-apogee-primary:hover {
+            background: linear-gradient(180deg, #1d74b9 0%, #005596 100%);
+        }
+
+        .btn-apogee-green {
+            background: linear-gradient(180deg, #16a34a 0%, #15803d 100%);
+            color: white;
+            border: 1px solid #14532d;
+        }
+        .btn-apogee-green:hover {
+            background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+        }
+
+        .btn-apogee-red {
+            background: linear-gradient(180deg, #c8102e 0%, #990011 100%);
+            color: white;
+            border: 1px solid #77000d;
+        }
+        .btn-apogee-red:hover {
+            background: linear-gradient(180deg, #e01e37 0%, #c8102e 100%);
+        }
+
+        .btn-apogee-secondary {
+            background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
+            color: #334155;
+            border: 1px solid #cbd5e1;
+        }
+        .btn-apogee-secondary:hover {
+            background: linear-gradient(180deg, #f1f5f9 0%, #cbd5e1 100%);
+        }
+
+        .priority-row {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background-color 0.15s ease;
+        }
+        .priority-row:hover {
+            background-color: #f0f7ff;
+        }
+        .priority-row.completed {
+            background-color: #f8fafc;
+            opacity: 0.65;
+        }
+        .priority-row.completed .priority-text {
+            text-decoration: line-through;
+            color: #64748b;
+        }
+
+        .cut-card {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.15s ease;
+        }
+        .cut-card:hover {
+            border-color: #005596;
+            box-shadow: 0 4px 12px rgba(0, 85, 150, 0.15);
+        }
+
+        /* Custom input styling */
+        input[type="text"], input[type="date"], textarea {
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+        }
+        input[type="text"]:focus, input[type="date"]:focus, textarea:focus {
+            outline: none;
+            border-color: #005596;
+            box-shadow: 0 0 0 2px rgba(0, 85, 150, 0.2);
+        }
+
+        /* Remove default marker on summary */
+        details > summary {
+            list-style: none;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+    </style>
+
+    <style>
+        /* ===== Apogee Rockets redesign layer ===== */
+        :root { --blue:#005596; --blue-dk:#003d6d; --red:#c8102e; --gold:#ffcc00; --ink:#10243a; --line:#d5dde6; }
+        body { background:#eef2f6; color:var(--ink); font-size:14px; line-height:1.45; }
+        body header.apogee-header { background:linear-gradient(135deg,#005596 0%,#003d6d 75%); border-bottom:0; position:relative; padding-top:1.1rem; padding-bottom:1.3rem; }
+        header.apogee-header::after { content:""; position:absolute; left:0; right:0; bottom:0; height:5px; background:linear-gradient(90deg,var(--red) 0 72%,var(--gold) 72% 100%); }
+        body h1.font-heading { font-size:1.75rem; letter-spacing:.07em; }
+        main h2.font-heading { font-size:1.2rem; color:var(--blue-dk); border-left:5px solid var(--red); padding-left:.7rem; line-height:1.2; }
+        main .border-b-2.border-apogeeBlue { border-bottom:1px solid var(--line); padding-bottom:.6rem; }
+        body .apogee-card { border:1px solid var(--line); border-radius:10px; box-shadow:0 1px 2px rgba(0,50,100,.06), 0 8px 18px -12px rgba(0,50,100,.25); }
+        body .apogee-card-header { background:#fff; border-bottom:3px solid var(--blue); color:var(--blue-dk); }
+        body [class*="btn-apogee-"] { border-radius:7px; font-family:'Trebuchet MS',Arial,sans-serif; letter-spacing:.02em; }
+        body .btn-apogee-primary { background:var(--blue); border-color:var(--blue-dk); }
+        body .btn-apogee-primary:hover { background:var(--blue-dk); }
+        body .btn-apogee-green { background:#15803d; border-color:#14532d; }
+        body .btn-apogee-green:hover { background:#166534; }
+        body .btn-apogee-red { background:var(--red); border-color:#77000d; }
+        body .btn-apogee-red:hover { background:#990011; }
+        body .btn-apogee-secondary { background:#fff; }
+        body .btn-apogee-secondary:hover { background:#eaf2fa; border-color:var(--blue); }
+        :focus-visible { outline:2px solid #1d74b9; outline-offset:2px; }
+
+        /* Stat numbers */
+        [id^="statTotal"], [id^="statQty"], [id^="statBatches"] { font-size:1.35rem; font-family:'Trebuchet MS',Arial,sans-serif; vertical-align:-2px; }
+
+        /* Tables */
+        main table { font-size:13px; }
+        main thead tr { background:var(--blue-dk) !important; }
+        main thead th { color:#fff !important; text-transform:none !important; letter-spacing:.02em !important; font-size:12px; padding:.8rem .75rem; }
+        main thead th.text-apogeeRed { color:var(--gold) !important; }
+        main tbody td { padding:.7rem .75rem; vertical-align:middle; }
+        main tbody tr.priority-row:nth-child(even) { background:#f5f8fb; }
+        main tbody tr.priority-row:hover { background:#e8f2fc; }
+        main tbody tr.priority-row.completed { opacity:.55; }
+        main tbody input[type="text"] { border-radius:6px; padding:.4rem .5rem; }
+
+        /* Batch tracker */
+        .batch-cell { min-width:230px; }
+        .batch-tally { display:inline-flex; align-items:baseline; gap:.3rem; margin-bottom:.4rem; padding:.1rem .6rem; border-radius:999px; background:var(--gold); color:var(--blue-dk); font-size:12px; font-weight:700; }
+        .batch-tally strong { font-size:1.1rem; font-family:'Trebuchet MS',Arial,sans-serif; }
+        .batch-add { display:flex; gap:.4rem; }
+        .batch-add input { width:5.5rem; text-align:center; font-family:'Courier New',monospace; font-size:12px; padding:.35rem .4rem; background:#fff; border:1px solid #94a3b8; border-radius:6px; }
+        .batch-add button { white-space:nowrap; padding:.35rem .7rem; font-size:12px; font-weight:700; }
+        .batch-chips { display:flex; flex-wrap:wrap; gap:.25rem; margin-top:.4rem; }
+        .batch-chip { display:inline-flex; align-items:center; gap:.2rem; padding:.05rem .2rem .05rem .5rem; border:1px solid var(--blue); border-radius:999px; background:#fff; color:var(--blue-dk); font:700 11px 'Courier New',monospace; }
+        .batch-chip button { border:0; background:none; color:#64748b; font-size:14px; line-height:1; padding:0 .3rem; cursor:pointer; }
+        .batch-chip button:hover { color:var(--red); }
+
+        /* Made Actual: auto-total vs manual */
+        .made-wrap { display:flex; flex-direction:column; gap:.3rem; align-items:stretch; }
+        .made-mode { font:700 10px 'Trebuchet MS',Arial,sans-serif; letter-spacing:.04em; padding:.15rem .3rem; border-radius:5px; border:1px solid #94a3b8; background:#fff; color:#475569; cursor:pointer; }
+        .made-mode:hover { border-color:var(--blue); }
+        .made-mode.on { background:#15803d; border-color:#14532d; color:#fff; }
+
+        /* Lists overview + collapsible lists */
+        .overview-bar { border-top:4px solid var(--blue) !important; margin-bottom:1.5rem; }
+        @media (min-width:1024px) { .overview-bar { position:sticky; top:8px; z-index:30; } }
+        .ov-chips { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.7rem; }
+        .ov-chip { display:inline-flex; align-items:center; gap:.45rem; padding:.25rem .4rem .25rem .75rem; border:1px solid var(--line); border-radius:999px; background:#fff; font:700 12px 'Trebuchet MS',Arial,sans-serif; color:var(--blue-dk); cursor:pointer; }
+        .ov-chip:hover { border-color:var(--blue); background:#eaf2fa; }
+        .ov-chip .n { min-width:1.4rem; text-align:center; padding:.05rem .4rem; border-radius:999px; background:#e2e8f0; color:#334155; }
+        .ov-chip.has .n { background:var(--gold); color:var(--blue-dk); }
+        .qd { margin-bottom:.8rem; scroll-margin-top:150px; }
+        .qd > summary { display:flex; align-items:center; justify-content:space-between; gap:.75rem; flex-wrap:wrap; padding:.9rem 1.1rem; cursor:pointer; user-select:none; border-left:5px solid var(--red); border-radius:10px; font-family:'Trebuchet MS',Arial,sans-serif; font-weight:700; color:var(--blue-dk); }
+        .qd > summary:hover { background:#f2f7fc; }
+        .qd[open] > summary { border-bottom:3px solid var(--blue); border-bottom-left-radius:0; border-bottom-right-radius:0; }
+        .qd-title { font-size:1.05rem; text-transform:uppercase; letter-spacing:.03em; }
+        .qd-right { display:flex; align-items:center; gap:.4rem; flex-wrap:wrap; }
+        .q-badge { padding:.1rem .6rem; border-radius:999px; background:#e2e8f0; color:#334155; font-size:11px; font-weight:700; }
+        .q-badge.q-red { background:#fde8eb; color:var(--red); }
+        .q-badge.q-green { background:#dcfce7; color:#15803d; }
+        .qd-toggle { font-size:11px; text-transform:uppercase; margin-left:.5rem; color:var(--blue); white-space:nowrap; }
+        .qd[open] .qd-expand, .qd:not([open]) .qd-collapse { display:none; }
+        .qd-chev { transition:transform .2s; margin-left:.25rem; }
+        .qd[open] .qd-chev { transform:rotate(180deg); }
+        .qd-body { padding:1.1rem; background:#f7f9fc; border-radius:0 0 10px 10px; }
+        .howto[open] .howto-chev { transform:rotate(180deg); }
+        .add-target { border:2px solid var(--blue); border-radius:7px; padding:.35rem .6rem; font:700 13px 'Trebuchet MS',Arial,sans-serif; color:var(--blue-dk); background:#fff; cursor:pointer; min-width:15rem; }
+        .add-target:focus { outline:2px solid #1d74b9; outline-offset:2px; }
+        @keyframes chipFlash { 0% { box-shadow:0 0 0 0 rgba(200,16,46,.65); background:#fff3b0; } 100% { box-shadow:0 0 0 10px rgba(200,16,46,0); background:#fff; } }
+        .ov-chip.flash { animation:chipFlash .9s ease-out 2; }
+        .howto-chev { transition:transform .2s; }
+
+        .batch-add { flex-wrap:wrap; }
+        .batch-add input.batch-time { width:6.5rem; }
+
+        /* Big shared date + sync status */
+        .date-hero { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:1.2rem 2rem; margin-bottom:1.5rem; padding:1.5rem 1.75rem; color:#fff; background:linear-gradient(135deg,#005596 0%,#003d6d 85%); border-radius:14px; border-bottom:6px solid var(--gold); box-shadow:0 10px 24px -14px rgba(0,50,100,.6); }
+        .dh-label { font:700 1rem 'Trebuchet MS',Arial,sans-serif; color:#bcd7ee; }
+        .dh-weekday { font:800 clamp(2.6rem,8vw,5.5rem)/1.02 'Trebuchet MS',Arial,sans-serif; }
+        .dh-date { font:700 clamp(1.6rem,4.5vw,3rem)/1.1 'Trebuchet MS',Arial,sans-serif; color:var(--gold); }
+        .dh-stale { margin-top:.8rem; display:inline-block; padding:.4rem .8rem; border-radius:8px; background:#fff3b0; color:#5a3b00; font:700 1rem Arial,sans-serif; }
+        .dh-side { display:flex; flex-direction:column; gap:.7rem; align-items:flex-start; min-width:15rem; }
+        .dh-field { font:700 .9rem Arial,sans-serif; color:#bcd7ee; display:flex; flex-direction:column; gap:.25rem; }
+        .dh-field input { font-size:1.1rem; padding:.45rem .6rem; color:#10243a; background:#fff; }
+        .dh-meta { font-size:.95rem; color:#dbe9f6; }
+        .sync-pill { display:inline-flex; align-items:center; gap:.5rem; padding:.4rem .9rem; border-radius:999px; font:700 .95rem Arial,sans-serif; background:#fff; color:#10243a; }
+        .sync-pill .dot { width:.7rem; height:.7rem; border-radius:50%; background:#94a3b8; }
+        .sync-live .dot { background:#16a34a; } .sync-wait .dot { background:#f59e0b; } .sync-bad { background:#fde8eb; color:#990011; } .sync-bad .dot { background:#c8102e; }
+
+        /* Laser cards */
+        .cut-card { border-top:3px solid var(--blue); border-radius:10px !important; }
+        .cut-card:hover { border-color:var(--red); border-top-color:var(--red); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+    <!-- APOGEE BRANDED HEADER BAR -->
+    <header class="apogee-header text-white py-4 px-4 md:px-8 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-rocket text-apogeeYellow text-3xl"></i>
+                <div>
+                    <h1 class="font-heading text-2xl font-bold tracking-wider text-white uppercase leading-none">
+                        Apogee Components
+                    </h1>
+                    <p class="text-xs text-blue-200 tracking-wide uppercase font-semibold mt-1">
+                        Production Lists, Order Tracking & Laser Settings
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="flex items-center space-x-2 text-xs font-mono bg-black/20 px-3 py-1.5 rounded border border-white/10">
+                    <i class="fa-solid fa-clock text-apogeeYellow"></i>
+                    <span id="sys-clock">00:00:00</span>
+                </div>
+                <div class="flex items-center space-x-2 text-xs font-mono bg-black/20 px-3 py-1.5 rounded border border-white/10">
+                    <i class="fa-solid fa-boxes-stacked text-apogeeYellow"></i>
+                    <span>BATCHES RUN: <strong id="headerBatches" class="text-apogeeYellow">0</strong></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="w-full max-w-7xl mx-auto px-4 md:px-8 py-6 flex-grow">
+
+        <!-- BIG SHARED DATE + LIVE SYNC STATUS -->
+        <section class="date-hero" aria-label="Priority list date">
+            <div>
+                <div class="dh-label">Priority list for</div>
+                <div class="dh-weekday" id="dhWeekday">&nbsp;</div>
+                <div class="dh-date" id="dhDate"></div>
+                <div class="dh-stale" id="dhStale" hidden><i class="fa-solid fa-triangle-exclamation"></i> Heads up: this list is not dated today.</div>
+            </div>
+            <div class="dh-side">
+                <label class="dh-field">Change list date
+                    <input type="date" id="masterDate" onchange="setMasterDate(this.value)" />
+                </label>
+                <div class="dh-meta" id="dhLoaded"></div>
+                <div id="syncPill" class="sync-pill sync-wait" role="status" aria-live="polite"><span class="dot"></span><span id="syncText">Connecting...</span></div>
+            </div>
+        </section>
+
+        <!-- LISTS OVERVIEW + COPY EVERYTHING (rendered by JS) -->
+        <div id="listsOverview"></div>
+
+        <!-- ADD ITEMS: one paste box + one manual entry, with a destination list dropdown (rendered by JS) -->
+        <div id="addPanel"></div>
+
+        <!-- PRODUCTION LISTS: Lasercut, Vinyl, Print, Assemble (rendered by JS) -->
+        <div id="queuesContainer"></div>
+
+        <!-- CHECKLIST -->
+        <div class="mb-12 mt-8">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b-2 border-apogeeBlue">
+                <h2 class="font-heading text-lg font-bold text-apogeeBlue uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-clipboard-check"></i> Checklist
+                </h2>
+                <span class="text-xs text-slate-500 font-sans" id="checklistCount">0 of 0 done</span>
+            </div>
+            <div class="apogee-card overflow-hidden">
+                <div class="apogee-card-header px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <div class="flex items-center gap-2 flex-1 min-w-[16rem]">
+                        <input type="text" id="checklistInput" placeholder="Add a checklist item and press Enter..."
+                            onkeydown="if(event.key==='Enter')addChecklistItem()"
+                            class="w-full bg-white text-slate-800 text-xs px-3 py-2" />
+                        <button onclick="addChecklistItem()" class="btn-apogee-primary px-3 py-2 rounded text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap">
+                            <i class="fa-solid fa-plus text-apogeeYellow"></i> Add
+                        </button>
+                    </div>
+                    <button onclick="clearChecklist()" class="btn-apogee-red px-3 py-2 rounded text-xs font-bold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-trash-can"></i> Clear All
+                    </button>
+                </div>
+                <ul id="checklistItems" class="divide-y divide-slate-200"></ul>
+            </div>
+        </div>
+
+        <!-- SECTION 3: LASER CUT SETTINGS & SPECIFICATIONS ARCHIVE -->
+        <div class="mb-12">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b-2 border-apogeeBlue">
+                <h2 class="font-heading text-lg font-bold text-apogeeBlue uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-laser-pointer"></i> Laser Cutter Parameters & Specification Archive
+                </h2>
+            </div>
+
+            <!-- SEARCH & TELEMETRY HEADER BAR -->
+            <div class="w-full mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="apogee-card p-3.5 md:col-span-2 flex items-center gap-3">
+                    <div class="text-apogeeBlue pl-1 text-lg">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        oninput="handleSearch(this.value)" 
+                        placeholder="Search materials, part numbers..." 
+                        class="w-full bg-white text-slate-800 font-sans text-xs placeholder-slate-400 focus:outline-none"
+                    />
+                    <button onclick="clearSearch()" class="btn-apogee-secondary px-3 py-1 text-xs font-bold rounded">
+                        Clear
+                    </button>
+                </div>
+
+                <div class="apogee-card p-3.5 flex items-center justify-between">
+                    <span id="searchStatus" class="font-heading font-bold text-xs text-apogeeBlue uppercase">// SHOWING SPECS</span>
+                    <span class="text-xs text-slate-500 font-mono font-bold">DATABASE v4.0</span>
+                </div>
+            </div>
+
+            <!-- CATEGORY FILTER PILLS -->
+            <div class="w-full flex items-center gap-2 overflow-x-auto pb-4 mb-4">
+                <button onclick="setCategory('ALL')" id="cat-ALL" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-primary shadow">ALL</button>
+                <button onclick="setCategory('PLYWOOD')" id="cat-PLYWOOD" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">PLYWOOD</button>
+                <button onclick="setCategory('BALSA')" id="cat-BALSA" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">BALSA</button>
+                <button onclick="setCategory('AT')" id="cat-AT" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">AT TUBES</button>
+                <button onclick="setCategory('AC')" id="cat-AC" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">AC COUPLERS</button>
+                <button onclick="setCategory('VAC-FORM')" id="cat-VAC-FORM" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">VAC-FORM</button>
+                <button onclick="setCategory('BASSWOOD')" id="cat-BASSWOOD" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">BASSWOOD</button>
+                <button onclick="setCategory('CARDBOARD')" id="cat-CARDBOARD" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">CARDBOARD</button>
+                <button onclick="setCategory('ACRYLIC')" id="cat-ACRYLIC" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">ACRYLIC</button>
+                <button onclick="setCategory('FOAM')" id="cat-FOAM" class="px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary">FOAM</button>
+            </div>
+
+            <!-- CUT SPECS GRID -->
+            <div id="cutsGrid" class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Populated via JavaScript -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="w-full bg-slate-200 border-t border-slate-300 py-6 text-center space-y-2">
+        <div class="text-[11px] md:text-xs text-slate-600 max-w-4xl mx-auto px-4 leading-relaxed font-sans">
+            Please be advised this is for private use within Apogee Components, developed for use in the warehouse by Travis.
+        </div>
+        <div class="text-xs text-slate-500 font-bold">
+            Apogee Components, Inc. • Copyright © Travis B. 2014 - 2027
+        </div>
+    </footer>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toastBanner" class="fixed bottom-5 right-5 z-40 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-slate-900 border border-slate-700 text-white px-4 py-2.5 rounded-lg shadow-2xl flex items-center gap-2.5 text-xs font-sans">
+            <i class="fa-solid fa-circle-check text-green-400 text-sm"></i>
+            <span id="toastMessage">Action completed successfully!</span>
+        </div>
+    </div>
+
+    <!-- SCRIPT LOGIC -->
+    <script>
+        // System Clock
+        setInterval(() => {
+            const now = new Date();
+            const clockEl = document.getElementById('sys-clock');
+            if(clockEl) clockEl.innerText = now.toTimeString().split(' ')[0];
+        }, 1000);
+
+        // Audio Synthesis
+        let audioEnabled = true;
+        let apogeeSynth = null;
+        function initApogeeSynth() {
+            if (!apogeeSynth) {
+                apogeeSynth = new Tone.Synth({
+                    oscillator: { type: 'triangle' },
+                    envelope: { attack: 0.02, decay: 0.15, sustain: 0, release: 0.1 }
+                }).toDestination();
+            }
+        }
+        function playApogeeNote(note = 'C5') {
+            if (!audioEnabled) return;
+            try {
+                Tone.start();
+                initApogeeSynth();
+                apogeeSynth.triggerAttackRelease(note, '16n');
+            } catch(e) {}
+        }
+
+        /* ----------------------------------------------------
+           PRIORITY LISTS - one shared engine for every list
+           (Lasercut, Vinyl, Print, Assemble)
+           To add another list later, just add a line to QUEUES.
+        ---------------------------------------------------- */
+        const QUEUES = [
+            { key: 'lasercut', short: 'Lasercut',   title: 'Lasercut',   icon: 'fa-bolt' },
+            { key: 'vinyl',    short: 'Vinyl',      title: 'Vinyl',      icon: 'fa-scissors' },
+            { key: 'assemble', short: 'Assemble',   title: 'Assemble',   icon: 'fa-screwdriver-wrench' },
+            { key: 'print',    short: 'Print',      title: 'Print',      icon: 'fa-print' },
+            { key: 'print3d',  short: '3D Print',   title: '3D Print',   icon: 'fa-cube' },
+            { key: 'vacform',  short: 'Vac-Form',   title: 'Vac-Form',   icon: 'fa-wind' },
+            { key: 'misc',     short: 'Misc Build', title: 'Misc Build', icon: 'fa-toolbox' },
+            { key: 'specials', short: 'Special Items', title: 'Non-Work Special Items', icon: 'fa-star' }
+        ];
+        const Q = {};   // key -> { items, pending }  (items live in the Firestore collection "items")
+        const META = { date: '', loadedAt: null };   // ONE shared date for the whole list (Firestore doc hub/meta)
+
+        function qSuffix(key)   { return key === 'main' ? '' : '_' + key; }
+        function qCfg(key)      { return QUEUES.find(c => c.key === key); }
+        function qLabel(key)    { return key === 'main' ? '' : qCfg(key).short + ' '; }
+
+        // Today's date in the user's local time zone (YYYY-MM-DD)
+        function localDateStr() {
+            const d = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+        }
+
+        /* ---------- Firestore sync ---------- */
+        const cloud = () => window.hubCloud || null;
+        const clone = o => JSON.parse(JSON.stringify(o));
+        const stable = v => Array.isArray(v) ? '[' + v.map(stable).join(',') + ']'
+            : (v && typeof v === 'object') ? '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + stable(v[k])).join(',') + '}'
+            : JSON.stringify(v);
+        const baseItems = {};   // key -> { id: last copy known to be in the cloud }
+        const pushTimers = {};
+        const deferRender = {};
+
+        // Every edit calls this; the changes are sent to Firestore a moment later (only the fields that changed)
+        function saveQueue(key) {
+            clearTimeout(pushTimers[key]);
+            pushTimers[key] = setTimeout(() => pushQueue(key), 350);
+        }
+
+        function pushQueue(key) {
+            clearTimeout(pushTimers[key]); pushTimers[key] = null;
+            const c = cloud();
+            if (!c) return 0;
+            const base = baseItems[key] || (baseItems[key] = {});
+            const cur = Q[key].items;
+            const ids = new Set(cur.map(i => i.id));
+            let n = 0;
+            const gone = Object.keys(base).filter(id => !ids.has(id));
+            if (gone.length) { c.deleteItems(gone); gone.forEach(id => delete base[id]); n++; }
+            cur.forEach(it => {
+                const now = clone(it), prev = base[it.id];
+                if (!prev) { c.setItem(now); base[it.id] = now; n++; return; }
+                const changed = {};
+                Object.keys(now).forEach(f => { if (stable(now[f]) !== stable(prev[f])) changed[f] = now[f]; });
+                if (Object.keys(changed).length) { c.patchItem(it.id, changed); base[it.id] = now; n++; }
+            });
+            return n;
+        }
+
+        // Called with every Firestore snapshot of the "items" collection
+        function applyCloudItems(docs) {
+            const by = {};
+            QUEUES.forEach(c => by[c.key] = []);
+            docs.forEach(d => { if (by[d.queue]) by[d.queue].push(d); });
+            QUEUES.forEach(c => {
+                const k = c.key;
+                if (pushTimers[k] && pushQueue(k) > 0) return;   // our unsent edits go first; the next snapshot includes them
+                const list = by[k].sort((a, b) => (a.ord || 0) - (b.ord || 0));
+                if (stable(list) === stable(Q[k].items)) return;
+                Q[k].items = list;
+                baseItems[k] = {};
+                list.forEach(i => baseItems[k][i.id] = clone(i));
+                renderQueueSafe(k);
+            });
+        }
+
+        // Never rebuild a table while someone is typing in it; do it as soon as they click away
+        function renderQueueSafe(k) {
+            const tb = document.getElementById('priorityTableBody' + qSuffix(k));
+            const a = document.activeElement;
+            if (tb && a && a.tagName === 'INPUT' && tb.contains(a)) { deferRender[k] = true; return; }
+            deferRender[k] = false;
+            renderQueue(k);
+        }
+        document.addEventListener('focusout', () => setTimeout(() => {
+            QUEUES.forEach(c => { if (deferRender[c.key]) renderQueueSafe(c.key); });
+        }, 60));
+
+        function newItemId(key) {
+            return 'item_' + (key === 'main' ? '' : key + '_') + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+        }
+        const defaultColor = key => (key === 'assemble' || key === 'specials') ? 'RED' : 'YELLOW';
+        function makeItem(key, f, ord) {
+            return Object.assign({
+                id: newItemId(key), queue: key, ord: ord || Date.now(), code: '', description: '',
+                avail: '0', max: '0', runQty: '0', color: defaultColor(key),
+                inBox: '', madeActual: '', badActual: '', timeTaken: '', initials: '',
+                completed: false, doneDate: ''
+            }, f);
+        }
+
+        /* ---------- Shared date banner + sync status ---------- */
+        function stampMasterDate() {
+            META.date = localDateStr();
+            META.loadedAt = Date.now();
+            renderDateBanner();
+            const c = cloud(); if (c) c.setMeta({ date: META.date, loadedAt: META.loadedAt });
+        }
+        function setMasterDate(val) {
+            if (!val) return;
+            META.date = val;
+            renderDateBanner();
+            const c = cloud(); if (c) c.setMeta({ date: val });
+            playApogeeNote('E5');
+            showToast('List date changed to ' + val + ' for everyone.');
+        }
+        function applyCloudMeta(m) {
+            if (m && m.date) META.date = m.date;
+            META.loadedAt = (m && m.loadedAt) || null;
+            renderDateBanner();
+        }
+        function renderDateBanner() {
+            const iso = META.date || localDateStr();
+            const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+            let wd = '', full = iso;
+            if (m) {
+                const d = new Date(+m[1], +m[2] - 1, +m[3]);
+                wd = d.toLocaleDateString('en-US', { weekday: 'long' });
+                full = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            }
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+            set('dhWeekday', wd); set('dhDate', full);
+            const inp = document.getElementById('masterDate');
+            if (inp && document.activeElement !== inp) inp.value = iso;
+            const st = document.getElementById('dhStale');
+            if (st) st.hidden = (iso === localDateStr());
+            set('dhLoaded', META.loadedAt ? 'List pasted at ' + new Date(META.loadedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '');
+        }
+        const SYNC_TEXT = {
+            live: ['sync-live', 'Live - synced for everyone'], saving: ['sync-wait', 'Saving...'], connecting: ['sync-wait', 'Connecting...'],
+            offline: ['sync-bad', 'Offline - changes sync when you reconnect'], error: ['sync-bad', 'Sync problem'],
+            unconfigured: ['sync-bad', 'Not connected - changes are NOT saved'], nocloud: ['sync-bad', 'Could not load Firebase - changes are NOT saved']
+        };
+        function setSyncStatus(state, detail) {
+            const pill = document.getElementById('syncPill');
+            const [cls, txt] = SYNC_TEXT[state] || SYNC_TEXT.error;
+            if (pill) pill.className = 'sync-pill ' + cls;
+            const t = document.getElementById('syncText');
+            if (t) t.textContent = txt + (detail ? ' (' + detail + ')' : '');
+        }
+        function startCloud() {
+            const c = cloud();
+            if (!c) { setSyncStatus(window.hubConfigured === false ? 'unconfigured' : 'nocloud'); return; }
+            c.start({ items: applyCloudItems, meta: applyCloudMeta, checklist: applyCloudChecklist, status: setSyncStatus });
+        }
+
+        // Destination list for the shared paste box + manual entry (remembered between visits)
+        const ADD_TARGET_KEY = 'apogee_add_target_v4';
+
+        function getAddTarget() {
+            const sel = document.getElementById('addTarget');
+            return (sel && Q[sel.value]) ? sel.value : QUEUES[0].key;
+        }
+
+        function setAddTarget(key) {
+            try { localStorage.setItem(ADD_TARGET_KEY, key); } catch(e) {}
+            playApogeeNote('D5');
+        }
+
+        function initAddTarget() {
+            let saved = QUEUES[0].key;
+            try { saved = localStorage.getItem(ADD_TARGET_KEY) || QUEUES[0].key; } catch(e) {}
+            const sel = document.getElementById('addTarget');
+            if (sel) sel.value = QUEUES.some(c => c.key === saved) ? saved : QUEUES[0].key;
+        }
+
+        function flashChip(key) {
+            const chip = document.getElementById('ov_' + key);
+            if (!chip) return;
+            chip.classList.remove('flash');
+            void chip.offsetWidth;
+            chip.classList.add('flash');
+        }
+
+        // Which list each section of the Priority Build Report feeds. Edit here to re-route.
+        const SECTION_ROUTES = {
+            '2': { queue: 'assemble', color: 'RED' },     // Buildable Finished Goods & Manufactured Parts
+            '3': { queue: 'assemble', color: 'RED' },     // Rocket Motors
+            '5': { queue: 'specials', color: 'RED' }      // Non-Work Special Items
+        };                                                // Section 4 is routed by its "Station:" lines
+        function stationToQueue(name) {
+            const n = name.toLowerCase();
+            if (n.includes('3d')) return 'print3d';
+            if (n.includes('laser')) return 'lasercut';
+            if (n.includes('vinyl')) return 'vinyl';
+            if (n.includes('vac')) return 'vacform';
+            if (n.includes('misc')) return 'misc';
+            if (n.includes('assem')) return 'assemble';
+            if (n.includes('print')) return 'print';
+            return null;
+        }
+
+        // Reads the ENTIRE pasted report: tracks section/station headings, keeps only real item rows
+        // (cols 0,1,5,6,7 = code, description, avail, max, run qty)
+        function parsePriorityReport(raw) {
+            const rows = []; let skipped = 0, route = null;
+            const isNum = v => /^-?\d+(\.\d+)?$/.test(String(v || '').replace(/,/g, ''));
+            raw.split(/\r?\n/).forEach(line => {
+                const t = line.trim();
+                if (!t) return;
+                let m = /^Section\s*(\d+)\s*[:\-]/i.exec(t);
+                if (m) { route = SECTION_ROUTES[m[1]] || null; return; }
+                m = /^Station\s*:\s*(.+)$/i.exec(t);
+                if (m) { const q = stationToQueue(m[1]); route = q ? { queue: q, color: 'YELLOW' } : null; return; }
+                let cols = line.split('\t');
+                if (cols.length < 8) cols = t.split(/\s{2,}/);
+                if (cols.length < 8) return;
+                cols = cols.map(c => c.trim());
+                if (!cols[0] || !isNum(cols[5]) || !isNum(cols[6]) || !isNum(cols[7])) return;   // heading rows
+                if (!route) { skipped++; return; }
+                rows.push({ queue: route.queue, color: route.color, code: cols[0], description: cols[1] || '',
+                            avail: cols[5].replace(/,/g, ''), max: cols[6].replace(/,/g, ''), runQty: cols[7].replace(/,/g, '') });
+            });
+            return { rows, skipped };
+        }
+
+        function handleParseAndLoad() {
+            const raw = document.getElementById('pasteInputArea').value;
+            if (!raw.trim()) { showToast('Please paste the whole priority list first.'); return; }
+            const { rows, skipped } = parsePriorityReport(raw);
+            if (!rows.length) { showToast('No item rows found. Copy the whole report, section headings included.'); return; }
+            const fresh = document.getElementById('pasteFresh').checked;
+            if (fresh && !confirm('Start fresh? This clears every item (and batches) in ALL lists for everyone before loading.')) return;
+            if (fresh) QUEUES.forEach(c => { Q[c.key].items = []; });
+
+            const base = Date.now(), counts = {};
+            let added = 0, updated = 0;
+            rows.forEach((r, i) => {
+                const items = Q[r.queue].items;
+                const ex = items.find(x => x.code === r.code);
+                if (ex) {            // already on the list: refresh the numbers, keep everyone's logged work
+                    Object.assign(ex, { description: r.description, avail: r.avail, max: r.max, runQty: r.runQty, color: r.color });
+                    updated++;
+                } else {
+                    items.push(makeItem(r.queue, r, base + i));
+                    added++;
+                }
+                counts[r.queue] = (counts[r.queue] || 0) + 1;
+            });
+            stampMasterDate();
+            QUEUES.forEach(c => { saveQueue(c.key); renderQueue(c.key); });
+            document.getElementById('pasteInputArea').value = '';
+            document.getElementById('pasteFresh').checked = false;
+            playApogeeNote('G5');
+            Object.keys(counts).forEach(flashChip);
+            const split = QUEUES.filter(c => counts[c.key]).map(c => `${c.short} ${counts[c.key]}`).join(', ');
+            showToast(`Loaded ${rows.length} items (${added} new, ${updated} updated): ${split}.${skipped ? ' Skipped ' + skipped + ' from unused sections.' : ''}`);
+        }
+
+        function handleManualAdd() {
+            const key = getAddTarget();
+            const code = document.getElementById('manualCode').value.trim();
+            if (!code) { showToast('Please enter at least a Parent Code.'); return; }
+            Q[key].items.push(makeItem(key, {
+                code: code,
+                description: document.getElementById('manualDesc').value.trim() || 'Manual Entry Item',
+                avail: document.getElementById('manualAvail').value.trim() || '0',
+                max: document.getElementById('manualMax').value.trim() || '0',
+                runQty: document.getElementById('manualRunQty').value.trim() || '0'
+            }));
+            saveQueue(key);
+            renderQueue(key);
+            ['manualCode', 'manualRunQty', 'manualAvail', 'manualMax', 'manualDesc'].forEach(id => { document.getElementById(id).value = ''; });
+            playApogeeNote('C5');
+            flashChip(key);
+            showToast(`Added item ${code} to ${qCfg(key).short}.`);
+        }
+
+        // field: 'inBox' | 'badActual' | 'timeTaken'  (Made Actual is handled by madeTyped)
+        function updateField(key, id, field, val) {
+            const item = Q[key].items.find(i => i.id === id);
+            if (item) {
+                item[field] = val;
+                saveQueue(key);
+            }
+        }
+
+        function toggleItemComplete(key, id) {
+            const item = Q[key].items.find(i => i.id === id);
+            if (item) {
+                item.completed = !item.completed;
+                item.doneDate = item.completed ? localDateStr() : '';
+                saveQueue(key);
+                renderQueue(key);
+                if (item.completed) playApogeeNote('C6');
+            }
+        }
+
+        function deleteItem(key, id) {
+            Q[key].items = Q[key].items.filter(i => i.id !== id);
+            saveQueue(key);
+            renderQueue(key);
+            playApogeeNote('A4');
+            showToast(`Item removed from ${qLabel(key)}queue.`);
+        }
+
+        function clearAllPriorities(key) {
+            if (Q[key].items.length === 0) return;
+            if (confirm(`Clear all items from the ${qLabel(key).toLowerCase()}priority list?`)) {
+                Q[key].items = [];
+                saveQueue(key);
+                renderQueue(key);
+                playApogeeNote('G4');
+                showToast(`${qLabel(key)}Priority list cleared.`);
+            }
+        }
+
+        function renderQueue(key) {
+            const s = qSuffix(key);
+            const tbody = document.getElementById('priorityTableBody' + s);
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+
+            let totalQty = 0;
+
+            Q[key].items.forEach(item => {
+                const runVal = parseInt(item.runQty) || 0;
+                totalQty += runVal;
+
+                const tr = document.createElement('tr');
+                tr.className = `priority-row ${item.completed ? 'completed' : ''}`;
+
+                tr.innerHTML = `
+                    <td class="p-3 text-center">
+                        <input
+                            type="checkbox"
+                            ${item.completed ? 'checked' : ''}
+                            onchange="toggleItemComplete('${key}','${item.id}')"
+                            class="rounded border-slate-300 text-apogeeBlue focus:ring-apogeeBlue cursor-pointer w-4 h-4"
+                        />
+                    </td>
+                    <td class="p-3 font-mono font-bold text-slate-800 priority-text">${batchEsc(item.code)}</td>
+                    <td class="p-3 font-medium text-slate-700 priority-text">${batchEsc(item.description)}</td>
+                    <td class="p-3 text-center font-mono text-slate-600">${batchEsc(item.avail)}</td>
+                    <td class="p-3 text-center font-mono text-slate-600">${batchEsc(item.max)}</td>
+                    <td class="p-3 text-center font-mono font-bold text-apogeeRed">${batchEsc(item.runQty)}</td>
+                    <td class="p-3 text-center">
+                        <input
+                            type="text"
+                            value="${batchEsc(item.inBox || '')}"
+                            placeholder="In Box"
+                            oninput="updateField('${key}','${item.id}','inBox',this.value)"
+                            class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border border-slate-300 rounded focus:border-amber-500 focus:outline-none"
+                        />
+                    </td>
+                    <td class="p-3 text-center">${madeCellHtml(item, key)}</td>
+                    <td class="p-3 text-center">
+                        <input
+                            type="text"
+                            value="${batchEsc(item.badActual || '')}"
+                            placeholder="Bad"
+                            oninput="updateField('${key}','${item.id}','badActual',this.value)"
+                            class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border border-slate-300 rounded focus:border-red-500 focus:outline-none"
+                        />
+                    </td>
+                    <td class="p-3 text-center">${timeCellHtml(item, key)}</td>
+                    <td class="p-3 batch-cell">${batchCellHtml(item, key)}</td>
+                    <td class="p-3 text-center">
+                        <input
+                            type="text"
+                            maxlength="10"
+                            value="${batchEsc(item.initials || '')}"
+                            placeholder="Initials"
+                            aria-label="Your initials"
+                            oninput="updateField('${key}','${item.id}','initials',this.value)"
+                            class="w-full text-center font-mono text-sm font-bold px-1.5 py-1 bg-white border border-slate-300 rounded focus:border-apogeeBlue focus:outline-none"
+                        />
+                    </td>
+                    <td class="p-3 text-center">
+                        <button onclick="deleteItem('${key}','${item.id}')" class="text-slate-400 hover:text-apogeeRed transition p-1">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+
+            const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
+            const n = Q[key].items.length;
+            setTxt('statTotal' + s, n);
+            setTxt('statQty' + s, totalQty);
+            setTxt('queueStatusText' + s, `${n} items loaded`);
+            setTxt('qbItems_' + key, `${n} ${n === 1 ? 'item' : 'items'}`);
+            setTxt('qbQty_' + key, `${totalQty} pending`);
+            Q[key].pending = totalQty;
+            updateBatchStats();
+        }
+
+        /* ---- Copy to Google Sheets (format unchanged: 11 tab-separated columns per row) ---- */
+        function mdFromIso(iso) {
+            const m = /^\d{4}-(\d{2})-(\d{2})$/.exec(iso || '');
+            return m ? `${+m[1]}/${+m[2]}` : '';
+        }
+        // date | code | desc | | | RED/YELLOW | avail | in box | made | bad | total on hand | time | time per unit | initials
+        function sheetsRow(item) {
+            const num = v => Number(v) || 0;
+            const hasQty = (item.inBox || '') !== '' || (item.madeActual || '') !== '';
+            const total = hasQty ? String(Math.round((num(item.inBox) + num(item.madeActual) - num(item.badActual)) * 1000) / 1000) : '';
+            const secs = item.timeTaken ? parseTime(item.timeTaken) : NaN;
+            const made = num(item.madeActual);
+            const perUnit = (!isNaN(secs) && made > 0) ? fmtTime(secs / made) : '0:00:00';
+            return [
+                mdFromIso(item.doneDate || META.date),
+                item.code || '',
+                item.description || '',
+                '',
+                '',
+                item.color || defaultColor(item.queue),
+                item.avail || '',
+                item.inBox || '',
+                item.madeActual || '',
+                item.badActual || '',
+                total,
+                item.timeTaken || '',
+                perUnit,
+                item.initials || ''
+            ].join('\t');
+        }
+
+        function copyTextToClipboard(copyText, okMsg) {
+            navigator.clipboard.writeText(copyText).then(() => {
+                playApogeeNote('C6');
+                showToast(okMsg);
+            }).catch(err => {
+                const textArea = document.createElement('textarea');
+                textArea.value = copyText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                playApogeeNote('C6');
+                showToast(okMsg);
+            });
+        }
+
+        function copyQueueForGoogleSheets(key) {
+            if (Q[key].items.length === 0) {
+                showToast(`No items in ${qLabel(key)}queue to copy.`);
+                return;
+            }
+            const copyText = Q[key].items.map(sheetsRow).join('\n');
+            copyTextToClipboard(copyText, `Copied ${Q[key].items.length} item(s) from ${qLabel(key)}queue formatted for Google Sheets!`);
+        }
+
+        // Copies only the checked-off (completed) rows from every list, in list order, using the exact same row format
+        function copyAllForGoogleSheets() {
+            const rows = [];
+            let listsUsed = 0;
+            QUEUES.forEach(c => {
+                const items = Q[c.key].items.filter(i => i.completed);
+                if (items.length) { listsUsed++; items.forEach(i => rows.push(sheetsRow(i))); }
+            });
+            if (rows.length === 0) {
+                showToast('No completed items to copy. Check off items first.');
+                return;
+            }
+            copyTextToClipboard(rows.join('\n'), `Copied ${rows.length} item(s) from ${listsUsed} list(s) formatted for Google Sheets!`);
+        }
+
+        function exportPriorityList(key) {
+            if (Q[key].items.length === 0) {
+                showToast(`No items to export${key === 'main' ? '' : ' from ' + qLabel(key) + 'queue'}.`);
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Parent Code,Description,Avail,Max,Priority Run Qty,In Box,Made Actual,Bad,Time Taken,Completed,Initials\n";
+
+            Q[key].items.forEach(item => {
+                const row = [
+                    `"${item.code}"`,
+                    `"${item.description.replace(/"/g, '""')}"`,
+                    `"${item.avail}"`,
+                    `"${item.max}"`,
+                    `"${item.runQty}"`,
+                    `"${item.inBox || ''}"`,
+                    `"${item.madeActual || ''}"`,
+                    `"${item.badActual || ''}"`,
+                    `"${item.timeTaken || ''}"`,
+                    `"${item.completed ? 'YES' : 'NO'}"`,
+                    `"${(item.initials || '').replace(/"/g, '""')}"`
+                ].join(",");
+                csvContent += row + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            const nameBit = key === 'main' ? '' : '_' + qCfg(key).short;
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Apogee_Priority_Queue${nameBit}_${META.date}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            playApogeeNote('E5');
+            showToast(`Exported ${qLabel(key)}priority queue CSV file.`);
+        }
+
+        /* ---- Page building: overview bar + one section per list ---- */
+        function queueBodyHtml(cfg) {
+            const k = cfg.key, s = qSuffix(k);
+            return `
+                <div class="w-full mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <div class="apogee-card p-3.5 flex items-center justify-between">
+                        <div class="text-xs font-heading font-bold text-slate-700">
+                            TOTAL ITEMS: <strong id="statTotal${s}" class="text-apogeeBlue text-sm ml-1">0</strong>
+                        </div>
+                        <div class="text-xs font-heading font-bold text-slate-700">
+                            PENDING QTY: <strong id="statQty${s}" class="text-apogeeRed text-sm ml-1">0</strong>
+                        </div>
+                        <div class="text-xs font-heading font-bold text-slate-700">BATCHES RUN: <strong id="statBatches${s}" class="text-apogeeSuccess ml-1">0</strong></div>
+                    </div>
+
+                    <div class="apogee-card p-3.5 flex items-center justify-end gap-2 flex-wrap">
+                        <button onclick="copyQueueForGoogleSheets('${k}')" class="btn-apogee-green px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5" title="Copy queue formatted for Google Sheets">
+                            <i class="fa-solid fa-copy"></i> Copy to Sheets
+                        </button>
+                        <button onclick="clearAllPriorities('${k}')" class="btn-apogee-red px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-trash-can"></i> Clear List
+                        </button>
+                        <button onclick="exportPriorityList('${k}')" class="btn-apogee-secondary px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-csv text-apogeeBlue"></i> CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div class="w-full">
+                    <div class="apogee-card overflow-hidden">
+                        <div class="apogee-card-header px-4 py-3 flex items-center justify-between text-xs">
+                            <div class="font-bold uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-list-check text-apogeeBlue"></i> Active Priority Queue${k === 'main' ? '' : ' (' + cfg.short + ')'}
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <button onclick="copyQueueForGoogleSheets('${k}')" class="btn-apogee-green px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-copy"></i> Copy Active Queue for Google Sheets
+                                </button>
+                                <div class="text-slate-500 font-normal" id="queueStatusText${s}">0 items loaded</div>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left font-sans text-xs">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-700 font-heading border-b border-slate-300 uppercase text-[11px] tracking-wider">
+                                        <th class="p-3 w-10 text-center">✓</th>
+                                        <th class="p-3">Parent Code</th>
+                                        <th class="p-3">Description</th>
+                                        <th class="p-3 text-center">Avail</th>
+                                        <th class="p-3 text-center">Max</th>
+                                        <th class="p-3 text-center text-apogeeRed font-bold">Priority Run Qty</th>
+                                        <th class="p-3 text-center text-amber-600 font-bold w-24">In Box</th>
+                                        <th class="p-3 text-center text-apogeeBlue font-bold w-28">Made Actual</th>
+                                        <th class="p-3 text-center text-red-600 font-bold w-24">Bad</th>
+                                        <th class="p-3 text-center text-emerald-600 font-bold w-28">Time Taken</th>
+                                        <th class="p-3 text-center font-bold w-60">Batches</th>
+                                        <th class="p-3 text-center font-bold w-28">Initials</th>
+                                        <th class="p-3 text-center w-16">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="priorityTableBody${s}">
+                                    <!-- Populated dynamically via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function addPanelHtml() {
+            const opts = QUEUES.map(c =>
+                `<option value="${c.key}">${batchEsc(c.key === 'main' ? 'Main - ' + c.title : c.title)}</option>`).join('');
+            return `
+                <div class="apogee-card mb-8">
+                    <div class="apogee-card-header px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+                        <div class="font-bold uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-circle-plus text-apogeeBlue"></i> Add Items
+                        </div>
+                        <label class="flex items-center gap-2 font-bold uppercase text-slate-700">
+                            <i class="fa-solid fa-arrow-right text-apogeeRed"></i> Manual items go to:
+                            <select id="addTarget" class="add-target" onchange="setAddTarget(this.value)">${opts}</select>
+                        </label>
+                    </div>
+                    <div class="p-4">
+                        <div class="w-full mb-4">
+                            <details class="apogee-card howto">
+                                <summary class="apogee-card-header p-3.5 flex items-center justify-between cursor-pointer text-xs uppercase font-bold text-apogeeBlue hover:text-apogeeBlueDark transition select-none">
+                                    <span class="flex items-center gap-2">
+                                        <i class="fa-solid fa-circle-question text-apogeeBlue text-base"></i>
+                                        <span>How to Use / Copy Data Instructions</span>
+                                    </span>
+                                    <i class="fa-solid fa-chevron-down howto-chev text-slate-500"></i>
+                                </summary>
+                                <div class="p-4 border-t border-slate-200 bg-slate-50 flex flex-col items-center">
+                                    <p class="text-xs text-slate-600 mb-3 font-sans max-w-2xl text-center">
+                                        Copy the whole list from https://apogeerockets.com/docs/Priority_Build_Report.html (everything, section headings included), then paste it into the box below and click <strong>Parse &amp; Load Data</strong>.
+                                    </p>
+                                    <div class="rounded overflow-hidden border border-slate-300 shadow-md max-w-4xl w-full">
+                                        <img loading="lazy" src="https://raw.githubusercontent.com/warehouse-sketch/production/main/webfiles/howtouse.gif" alt="How to copy and paste priority queue data" class="w-full h-auto block" />
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+
+                        <div class="w-full grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="apogee-card p-4 flex flex-col justify-between">
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between text-xs font-heading font-bold mb-2">
+                                        <span class="text-apogeeBlue uppercase"><i class="fa-solid fa-paste mr-1"></i> Paste the ENTIRE Priority Build Report</span>
+                                    </div>
+                                    <textarea
+                                        id="pasteInputArea"
+                                        rows="4"
+                                        placeholder="Copy the whole priority list (section headings included) and paste it here..."
+                                        class="w-full bg-slate-50 p-2.5 text-xs font-mono text-slate-800 placeholder-slate-400 resize-y"
+                                    ></textarea>
+                                </div>
+                                <div class="flex items-center justify-between pt-3 border-t border-slate-100 mt-3">
+                                    <div class="text-[11px] text-slate-500 font-sans">
+                                        Every row is sorted into its list automatically.<br><label class="inline-flex items-center gap-1.5 mt-1 font-bold text-slate-700"><input type="checkbox" id="pasteFresh" class="w-3.5 h-3.5" /> Start fresh (clear all lists first)</label>
+                                    </div>
+                                    <button onclick="handleParseAndLoad()" class="btn-apogee-primary px-4 py-2 font-bold text-xs rounded shadow transition active:scale-95 flex items-center gap-2">
+                                        <i class="fa-solid fa-bolt text-apogeeYellow"></i>
+                                        <span>Parse &amp; Load Data</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="apogee-card p-4 flex flex-col justify-between">
+                                <div>
+                                    <div class="text-xs font-heading font-bold text-apogeeBlue uppercase mb-2">
+                                        <i class="fa-solid fa-circle-plus mr-1"></i> Manual Item Entry
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2 mb-2">
+                                        <input type="text" id="manualCode" placeholder="Code (e.g. 10067)" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                                        <input type="text" id="manualRunQty" placeholder="Run Qty" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2 mb-2">
+                                        <input type="text" id="manualAvail" placeholder="Avail" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                                        <input type="text" id="manualMax" placeholder="Max" class="bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800" />
+                                    </div>
+                                    <input type="text" id="manualDesc" placeholder="Description" class="w-full bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-800 mb-2" />
+                                </div>
+                                <button onclick="handleManualAdd()" class="btn-apogee-secondary w-full py-2 font-bold text-xs rounded transition active:scale-95 flex items-center justify-center gap-1.5 border-slate-300 mt-2">
+                                    <i class="fa-solid fa-plus text-apogeeBlue"></i> Add Item to Queue
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function queueWrapperHtml(cfg) {
+            const k = cfg.key;
+            return `
+                <details class="qd apogee-card" id="queue_${k}">
+                    <summary>
+                        <span class="qd-title"><i class="fa-solid ${cfg.icon} mr-2"></i>${cfg.title}</span>
+                        <span class="qd-right">
+                            <span class="q-badge" id="qbItems_${k}">0 items</span>
+                            <span class="q-badge q-red" id="qbQty_${k}">0 pending</span>
+                            <span class="q-badge q-green" id="qbBatches_${k}">0 batches</span>
+                            <span class="qd-toggle"><span class="qd-expand">Expand</span><span class="qd-collapse">Collapse</span><i class="fa-solid fa-chevron-down qd-chev"></i></span>
+                        </span>
+                    </summary>
+                    <div class="qd-body">${queueBodyHtml(cfg)}</div>
+                </details>`;
+        }
+
+        function overviewHtml() {
+            const chips = QUEUES.map(c => `
+                <button type="button" class="ov-chip" id="ov_${c.key}" onclick="jumpToQueue('${c.key}')" title="Open ${batchEsc(c.title)}">
+                    <i class="fa-solid ${c.icon}"></i> ${c.short} <span class="n" id="ovn_${c.key}">0</span>
+                </button>`).join('');
+            return `
+                <div class="apogee-card overview-bar p-4">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <div class="font-heading font-bold text-apogeeBlue uppercase text-sm"><i class="fa-solid fa-layer-group mr-1"></i> All Production Lists</div>
+                            <div class="text-[11px] text-slate-500 font-sans mt-0.5">
+                                <strong id="ovTotalItems">0</strong> items across all lists &middot; <strong id="ovTotalQty" class="text-apogeeRed">0</strong> pending qty
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <button onclick="copyAllForGoogleSheets()" class="btn-apogee-green px-4 py-2 rounded text-xs font-bold transition flex items-center gap-2" title="Copy every checked-off (completed) row from every list, in Google Sheets format">
+                                <i class="fa-solid fa-copy"></i> Copy ALL Completed to Sheets
+                            </button>
+                            <button onclick="setAllQueuesOpen(true)" class="btn-apogee-secondary px-3 py-2 rounded text-xs font-bold transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-angles-down text-apogeeBlue"></i> Expand all
+                            </button>
+                            <button onclick="setAllQueuesOpen(false)" class="btn-apogee-secondary px-3 py-2 rounded text-xs font-bold transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-angles-up text-apogeeBlue"></i> Collapse all
+                            </button>
+                            <button onclick="clearAllQueues()" class="btn-apogee-red px-4 py-2 rounded text-xs font-bold transition flex items-center gap-2" title="Remove every item from every production list">
+                                <i class="fa-solid fa-trash-can"></i> Clear ALL Lists
+                            </button>
+                        </div>
+                    </div>
+                    <div class="ov-chips">${chips}</div>
+                </div>`;
+        }
+
+        function jumpToQueue(key) {
+            const el = document.getElementById('queue_' + key);
+            if (!el) return;
+            if (el.tagName === 'DETAILS') el.open = true;
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function setAllQueuesOpen(open) {
+            QUEUES.forEach(c => {
+                const el = document.getElementById('queue_' + c.key);
+                if (el && el.tagName === 'DETAILS') el.open = open;
+            });
+        }
+
+        function buildQueues() {
+            document.getElementById('listsOverview').innerHTML = overviewHtml();
+            document.getElementById('addPanel').innerHTML = addPanelHtml();
+            const heading = `
+                <div class="flex items-center justify-between mb-4 pb-2 border-b-2 border-apogeeBlue">
+                    <h2 class="font-heading text-lg font-bold text-apogeeBlue uppercase flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group"></i> Production Lists
+                    </h2>
+                    <span class="text-xs text-slate-500 font-sans">Hidden by default &mdash; click a list to open it</span>
+                </div>`;
+            document.getElementById('queuesContainer').innerHTML = heading + QUEUES.map(queueWrapperHtml).join('');
+        }
+
+
+        /* ----------------------------------------------------
+           LASER CUT SETTINGS LOGIC
+        ---------------------------------------------------- */
+        const cutsData = [
+            { name: "1/32\" Plywood", pn: "14110", diameter: "N/A", class: "PLYWOOD", cut: { freq: 50, spd: 30, pwr: 32 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 5 }] },
+            { name: "1/16\" Plywood", pn: "14112", diameter: "N/A", class: "PLYWOOD", cut: { freq: 65, spd: 26, pwr: 85 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 26, pwr: 8 }, { type: "Raster", freq: "-", spd: 100, pwr: 40 }] },
+            { name: "1/8\" Plywood", pn: "40210", diameter: "N/A", class: "PLYWOOD", cut: { freq: 35, spd: 20, pwr: 100 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 100, pwr: 30 }, { type: "Raster", freq: "-", spd: 100, pwr: 35 }] },
+            { name: "1/4\" Plywood Single Cut", pn: "40212", diameter: "N/A", class: "PLYWOOD", cut: { freq: 35, spd: "10-11", pwr: 100 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 100, pwr: 15 }, { type: "Raster", freq: 50, spd: 100, pwr: 30 }] },
+            { name: "1/4\" Plywood Dual Cut", pn: "40212", diameter: "N/A", class: "PLYWOOD", cut: { freq: 65, spd: "10-17", pwr: 100 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 100, pwr: 15 }, { type: "Raster", freq: 50, spd: 100, pwr: 30 }] },
+            { name: "1/32\" Balsa", pn: "14105", diameter: "N/A", class: "BALSA", cut: { freq: 50, spd: 45, pwr: 15 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 3 }] },
+            { name: "1/16\" Balsa", pn: "14103", diameter: "N/A", class: "BALSA", cut: [{ type: "Cut (Hardwood)", freq: 50, spd: 45, pwr: 22 }, { type: "Cut (Softwood)", freq: 50, spd: 50, pwr: 16 }], engrave: [{ type: "Engrave / Raster", freq: 50, spd: 26, pwr: 3 }] },
+            { name: "3/32\" Balsa", pn: "14104", diameter: "N/A", class: "BALSA", cut: { freq: 50, spd: 50, pwr: 22 }, engrave: [] },
+            { name: "1/8\" Balsa", pn: "14102 / 14107", diameter: "N/A", class: "BALSA", cut: [{ type: "Cut (Hardwood)", freq: 50, spd: 30, pwr: 45 }, { type: "Cut (Softwood)", freq: 50, spd: 35, pwr: 40 }], engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 3 }, { type: "Raster", freq: "-", spd: 26, pwr: 12 }] },
+            { name: "3/16\" Balsa", pn: "14106", diameter: "N/A", class: "BALSA", cut: { freq: 50, spd: 50, pwr: 80 }, engrave: [{ type: "Engrave / Raster", freq: 0, spd: 0, pwr: 0 }] },
+            { name: "1/4\" Balsa", pn: "14109", diameter: "N/A", class: "BALSA", cut: { freq: 50, spd: 25, pwr: 80 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 26, pwr: 6 }] },
+            { name: "Foam Board / Foam Core", pn: "N/A", diameter: "N/A", class: "FOAM", cut: { freq: "-", spd: 100, pwr: 25 }, engrave: [{ type: "Engrave / Raster", freq: "-", spd: 12, pwr: 5 }] },
+            { name: "AT-13/18\"", pn: "10062", diameter: "OD: 0.544\" | ID (AC-13): 0.518\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 5 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 100, pwr: 2 }] },
+            { name: "AT-18/18\"", pn: "10085", diameter: "OD: 0.736\" | ID (AC-18): 0.710\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 5 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 2 }] },
+            { name: "AT-24/18\"", pn: "10089", diameter: "OD: 0.976\" | ID (AC-24): 0.950\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 7 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 1 }] },
+            { name: "AT-24/6\" Clear", pn: "10101", diameter: "OD: 0.976\" | ID (AC-24): 0.950\"", class: "AT", cut: { freq: "-", spd: 37, pwr: 15 }, engrave: [] },
+            { name: "AT-29/13\"", pn: "10110", diameter: "OD: 1.176\" | ID (AC-29): 1.140\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 7 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 1 }] },
+            { name: "AT-29/7\" Thick Wall", pn: "10250", diameter: "OD: 1.176\" | ID (AC-29): 1.140\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 10 }, engrave: [] },
+            { name: "AT-33/18\"", pn: "10130", diameter: "OD: 1.325\" | ID (AC-33): 1.283\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 6 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 1 }] },
+            { name: "AT-41.6/18\"", pn: "10140", diameter: "OD: 1.637\" | ID (AC-41.6): 1.595\"", class: "AT", cut: { freq: 50, spd: 45, pwr: 10 }, engrave: [] },
+            { name: "AT-56/18", pn: "10160", diameter: "OD: 2.217\" | ID (AC-56): 2.180\"", class: "AT", cut: { freq: 50, spd: 30, pwr: 9 }, engrave: [] },
+            { name: "AT-66/18\"", pn: "10197", diameter: "OD: 2.600\" | ID (AC-66): 2.558\"", class: "AT", cut: { freq: 50, spd: 60, pwr: 12 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 60, pwr: 3 }] },
+            { name: "AT-74/18\"", pn: "10201", diameter: "OD: 2.990\" | ID (AC-74): 2.945\"", class: "AT", cut: { freq: 50, spd: 70, pwr: 30 }, engrave: [] },
+            { name: "AT-98/18\" (4\")", pn: "10218", diameter: "OD: 3.990\" | ID (AC-98): N/A", class: "AT", cut: { freq: 50, spd: 40, pwr: 20 }, engrave: [] },
+            { name: "AC-13 Coupler", pn: "13012", diameter: "ID: 0.518\" | OD: 0.544\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 5 }, engrave: [] },
+            { name: "AC-18 Coupler", pn: "13013", diameter: "ID: 0.710\" | OD: 0.736\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 9 }, engrave: [] },
+            { name: "AC-24 Coupler", pn: "13007", diameter: "ID: 0.950\" | OD: 0.976\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 7 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 30, pwr: 2 }] },
+            { name: "AC-33 Coupler", pn: "13016", diameter: "ID: 1.283\" | OD: 1.325\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 7 }, engrave: [] },
+            { name: "AC-41.6 / BT-60 Coupler", pn: "13018", diameter: "ID: 1.595\" | OD: 1.637\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 7 }, engrave: [] },
+            { name: "AC-56 / BT-70 Coupler", pn: "13042", diameter: "ID: 2.180\" | OD: 2.217\"", class: "AC", cut: { freq: 50, spd: 45, pwr: 12 }, engrave: [] },
+            { name: "AC-66 / BT-80 Coupler", pn: "13044", diameter: "ID: 2.558\" | OD: 2.600\"", class: "AC", cut: { freq: 50, spd: 30, pwr: 12 }, engrave: [] },
+            { name: "AC-74 / 3\" Coupler", pn: "13046", diameter: "ID: 2.945\" | OD: 2.990\"", class: "AC", cut: { freq: 50, spd: 50, pwr: 24 }, engrave: [{ type: "Engrave / Raster", freq: "-", spd: 60, pwr: 3 }] },
+            { name: "Vac-Form .01", pn: "30001", diameter: "N/A", class: "VAC-FORM", cut: { freq: 50, spd: 60, pwr: 5 }, engrave: [] },
+            { name: "Vac-Form .02", pn: "30002", diameter: "N/A", class: "VAC-FORM", cut: { freq: 50, spd: 37, pwr: 3 }, engrave: [] },
+            { name: "Vac-Form .03", pn: "30003", diameter: "N/A", class: "VAC-FORM", cut: { freq: 50, spd: 100, pwr: 7 }, engrave: [] },
+            { name: "Vac-Form .03 Clear", pn: "13007", diameter: "N/A", class: "VAC-FORM", cut: { freq: 50, spd: 90, pwr: 10 }, engrave: [] },
+            { name: "Vac-Form .06", pn: "13016", diameter: "N/A", class: "VAC-FORM", cut: { freq: 50, spd: 90, pwr: 18 }, engrave: [] },
+            { name: "Acrylic", pn: "40218", diameter: "N/A", class: "ACRYLIC", cut: { freq: 50, spd: 10, pwr: 60 }, engrave: [] },
+            { name: "Cardstock", pn: "44000 / 44001", diameter: "OD: 0.976\" | ID: 0.950\"", class: "CARDBOARD", cut: { freq: 40, spd: 30, pwr: 40 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 40, pwr: 8 }] },
+            { name: "Basswood 3/32\"", pn: "14123", diameter: "N/A", class: "BASSWOOD", cut: { freq: 50, spd: 30, pwr: 85 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 40, pwr: 5 }] },
+            { name: "Basswood 1/8\"", pn: "14121", diameter: "N/A", class: "BASSWOOD", cut: { freq: 50, spd: 25, pwr: 85 }, engrave: [] },
+            { name: "Corrugated Cardboard", pn: "44007", diameter: "N/A", class: "CARDBOARD", cut: { freq: 50, spd: 35, pwr: 50 }, engrave: [{ type: "Engrave / Raster", freq: 50, spd: 50, pwr: 8 }] },
+            { name: "10.5mm Tube", pn: "N/A", diameter: "OD: 0.466\" | ID: 0.422\"", class: "AT", cut: null, engrave: [], note: "SETTINGS NOT SPECIFIED" },
+            { name: "98mm / 4\" Tube", pn: "N/A", diameter: "OD: 3.990\" | ID: N/A", class: "AT", cut: { freq: 50, spd: 40, pwr: 20 }, engrave: [] }
+        ];
+
+        let selectedCategory = 'ALL';
+        let currentSearchQuery = '';
+
+        function setCategory(cat) {
+            selectedCategory = cat;
+            const buttons = document.querySelectorAll('[id^="cat-"]');
+            buttons.forEach(btn => {
+                if (btn.id === `cat-${cat}`) {
+                    btn.className = 'px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-primary shadow';
+                } else {
+                    btn.className = 'px-3 py-1.5 rounded text-xs font-bold transition btn-apogee-secondary';
+                }
+            });
+            renderCutGrid();
+            playApogeeNote('D5');
+        }
+
+        function handleSearch(query) {
+            currentSearchQuery = query.toLowerCase().trim();
+            renderCutGrid();
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            currentSearchQuery = '';
+            renderCutGrid();
+            playApogeeNote('C5');
+        }
+
+        function buildParamRowHtml(title, spd, pwr, freq) {
+            return `
+                <div class="mb-2">
+                    ${title ? `<div class="text-[10px] font-bold text-slate-500 uppercase mb-1 font-sans">${title}</div>` : ''}
+                    <div class="grid grid-cols-3 gap-1.5 bg-slate-50 p-2 rounded border border-slate-200 text-center font-mono text-xs">
+                        <div>
+                            <div class="text-[9px] text-slate-400 uppercase font-sans">Speed</div>
+                            <div class="font-bold text-slate-800">${spd !== undefined ? spd : '-'}</div>
+                        </div>
+                        <div>
+                            <div class="text-[9px] text-slate-400 uppercase font-sans">Power</div>
+                            <div class="font-bold text-slate-800">${pwr !== undefined ? pwr : '-'}</div>
+                        </div>
+                        <div>
+                            <div class="text-[9px] text-slate-400 uppercase font-sans">Freq</div>
+                            <div class="font-bold text-slate-800">${freq !== undefined ? freq : '-'}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCutGrid() {
+            const grid = document.getElementById('cutsGrid');
+            if (!grid) return;
+
+            grid.innerHTML = '';
+
+            const filtered = cutsData.filter(item => {
+                const matchesCat = (selectedCategory === 'ALL') || (item.class === selectedCategory);
+                const matchesQuery = !currentSearchQuery || 
+                    item.name.toLowerCase().includes(currentSearchQuery) ||
+                    item.pn.toLowerCase().includes(currentSearchQuery) ||
+                    item.class.toLowerCase().includes(currentSearchQuery) ||
+                    (item.diameter && item.diameter.toLowerCase().includes(currentSearchQuery));
+                return matchesCat && matchesQuery;
+            });
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'cut-card rounded-md p-4 flex flex-col justify-between';
+
+                let cutHtml = '';
+                if (!item.cut) {
+                    cutHtml = `<div class="text-xs font-bold text-apogeeRed italic my-2">${item.note || 'SETTINGS NOT SPECIFIED'}</div>`;
+                } else if (Array.isArray(item.cut)) {
+                    item.cut.forEach(c => {
+                        cutHtml += buildParamRowHtml(c.type || 'Cut', c.spd, c.pwr, c.freq);
+                    });
+                } else {
+                    cutHtml = buildParamRowHtml('Vector Cut', item.cut.spd, item.cut.pwr, item.cut.freq);
+                }
+
+                let engraveHtml = '';
+                if (item.engrave && item.engrave.length > 0) {
+                    item.engrave.forEach(e => {
+                        engraveHtml += buildParamRowHtml(e.type || 'Engrave / Raster', e.spd, e.pwr, e.freq);
+                    });
+                }
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 font-mono">${item.class}</span>
+                            <span class="text-[10px] text-slate-500 font-mono">P/N: ${item.pn}</span>
+                        </div>
+                        <h3 class="font-heading font-bold text-sm text-apogeeBlue mb-1 uppercase tracking-wide">${item.name}</h3>
+                        ${item.diameter && item.diameter !== 'N/A' ? `<div class="text-[11px] text-slate-500 font-mono mb-3">${item.diameter}</div>` : '<div class="mb-3"></div>'}
+                        
+                        ${cutHtml}
+                        ${engraveHtml}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            const statusEl = document.getElementById('searchStatus');
+            if (statusEl) {
+                statusEl.innerText = `// SHOWING ${filtered.length} SPECS`;
+            }
+        }
+
+        /* ----------------------------------------------------
+           TOAST NOTIFICATION UTILITY
+        ---------------------------------------------------- */
+        let toastTimeout = null;
+        function showToast(msg) {
+            const banner = document.getElementById('toastBanner');
+            const messageEl = document.getElementById('toastMessage');
+            if (!banner || !messageEl) return;
+
+            messageEl.innerText = msg;
+            banner.classList.remove('translate-y-20', 'opacity-0');
+            banner.classList.add('translate-y-0', 'opacity-100');
+
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                banner.classList.remove('translate-y-0', 'opacity-100');
+                banner.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+
+        /* ----------------------------------------------------
+           BATCH TRACKING (works for both queues)
+        ---------------------------------------------------- */
+        function batchEsc(v) { return String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        function batchState(q) { return Q[q]; }
+        function batchSave(q) { saveQueue(q); }
+        function batchRender(q) { renderQueue(q); }
+
+        /* ---- Batch quantities -> Made Actual total ---- */
+        function hasBatchQty(item) {
+            return (item.batches || []).some(b => b.qty !== null && b.qty !== undefined);
+        }
+        function batchSum(item) {
+            const s = (item.batches || []).reduce((n, b) => n + (Number(b.qty) || 0), 0);
+            return Math.round(s * 1000) / 1000;
+        }
+        // Auto unless the person has typed a manual total
+        function isMadeAuto(item) {
+            return item.madeAuto !== undefined ? item.madeAuto : !item.madeActual;
+        }
+        // Time per batch is typed as H:MM:SS (or M:SS, or plain seconds)
+        function parseTime(raw) {
+            const t = String(raw).trim();
+            if (!/^\d+(:\d{1,2}){0,2}$/.test(t)) return NaN;
+            const p = t.split(':').map(Number);
+            if (p.length > 1 && p[p.length - 1] > 59) return NaN;
+            if (p.length === 3 && p[1] > 59) return NaN;
+            if (p.length === 1) return p[0];
+            if (p.length === 2) return p[0] * 60 + p[1];
+            return p[0] * 3600 + p[1] * 60 + p[2];
+        }
+        function fmtTime(total) {
+            total = Math.round(total);
+            const h = Math.floor(total / 3600), m = Math.floor(total % 3600 / 60), s = total % 60;
+            return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+        function hasBatchTime(item) { return (item.batches || []).some(b => b.secs !== null && b.secs !== undefined); }
+        function batchSecs(item) { return (item.batches || []).reduce((n, b) => n + (Number(b.secs) || 0), 0); }
+        function isTimeAuto(item) { return item.timeAuto !== undefined ? item.timeAuto : !item.timeTaken; }
+
+        function syncMade(item) {
+            const auto = isMadeAuto(item);
+            item.madeAuto = auto;
+            if (auto) item.madeActual = hasBatchQty(item) ? String(batchSum(item)) : '';
+            const tAuto = isTimeAuto(item);
+            item.timeAuto = tAuto;
+            if (tAuto) item.timeTaken = hasBatchTime(item) ? fmtTime(batchSecs(item)) : '';
+        }
+
+        function timeCellHtml(item, q) {
+            const auto = isTimeAuto(item);
+            return `
+                <div class="made-wrap">
+                    <input type="text" id="time_${q}_${item.id}" value="${batchEsc(item.timeTaken || '')}" placeholder="H:MM:SS"
+                        oninput="timeTyped('${q}','${item.id}',this.value)"
+                        class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border rounded focus:outline-none ${auto ? 'border-emerald-500' : 'border-slate-300'}" />
+                    <button type="button" id="timeMode_${q}_${item.id}" class="made-mode ${auto ? 'on' : ''}"
+                        onclick="toggleTimeAuto('${q}','${item.id}')"
+                        title="Click to switch between auto-total from batches and a manually typed time">${auto ? '&Sigma; AUTO' : 'MANUAL'}</button>
+                </div>`;
+        }
+
+        function timeTyped(q, id, val) {
+            const item = batchState(q).items.find(i => i.id === id);
+            if (!item) return;
+            item.timeTaken = val;
+            item.timeAuto = false;
+            batchSave(q);
+            const btn = document.getElementById(`timeMode_${q}_${id}`);
+            const inp = document.getElementById(`time_${q}_${id}`);
+            if (btn) { btn.innerHTML = 'MANUAL'; btn.classList.remove('on'); }
+            if (inp) { inp.classList.remove('border-emerald-500'); inp.classList.add('border-slate-300'); }
+        }
+
+        function toggleTimeAuto(q, id) {
+            const item = batchState(q).items.find(i => i.id === id);
+            if (!item) return;
+            if (isTimeAuto(item)) {
+                item.timeAuto = false;
+            } else {
+                item.timeAuto = true;
+                if (hasBatchTime(item)) item.timeTaken = fmtTime(batchSecs(item));
+            }
+            batchSave(q);
+            batchRender(q);
+            playApogeeNote('E5');
+            showToast(item.timeAuto ? `${item.code}: time now adds up from batches.` : `${item.code}: time is now manual.`);
+        }
+
+        function madeCellHtml(item, q) {
+            const auto = isMadeAuto(item);
+            return `
+                <div class="made-wrap">
+                    <input type="text" id="made_${q}_${item.id}" value="${batchEsc(item.madeActual || '')}" placeholder="Made"
+                        oninput="madeTyped('${q}','${item.id}',this.value)"
+                        class="w-full text-center font-mono text-xs px-1.5 py-1 bg-white border rounded focus:outline-none ${auto ? 'border-emerald-500' : 'border-slate-300'}" />
+                    <button type="button" id="madeMode_${q}_${item.id}" class="made-mode ${auto ? 'on' : ''}"
+                        onclick="toggleMadeAuto('${q}','${item.id}')"
+                        title="Click to switch between auto-total from batches and a manually typed total">${auto ? '&Sigma; AUTO' : 'MANUAL'}</button>
+                </div>`;
+        }
+
+        function madeTyped(q, id, val) {
+            const item = batchState(q).items.find(i => i.id === id);
+            if (!item) return;
+            item.madeActual = val;
+            item.madeAuto = false;               // typing = manual override
+            batchSave(q);
+            const btn = document.getElementById(`madeMode_${q}_${id}`);
+            const inp = document.getElementById(`made_${q}_${id}`);
+            if (btn) { btn.innerHTML = 'MANUAL'; btn.classList.remove('on'); }
+            if (inp) { inp.classList.remove('border-emerald-500'); inp.classList.add('border-slate-300'); }
+        }
+
+        function toggleMadeAuto(q, id) {
+            const item = batchState(q).items.find(i => i.id === id);
+            if (!item) return;
+            if (isMadeAuto(item)) {
+                item.madeAuto = false;
+            } else {
+                item.madeAuto = true;
+                if (hasBatchQty(item)) item.madeActual = String(batchSum(item));
+            }
+            batchSave(q);
+            batchRender(q);
+            playApogeeNote('E5');
+            showToast(item.madeAuto ? `${item.code}: total now adds up from batches.` : `${item.code}: total is now manual.`);
+        }
+
+        function batchCellHtml(item, q) {
+            const list = item.batches || [];
+            const chips = list.map((b, i) => {
+                const parts = [];
+                if (b.qty !== null && b.qty !== undefined) parts.push(batchEsc(b.qty));
+                if (b.secs !== null && b.secs !== undefined) parts.push(fmtTime(b.secs));
+                const label = parts.length ? parts.join(' &middot; ') : '&ndash;';
+                return `<span class="batch-chip" title="Batch ${batchEsc(b.num)} &middot; logged ${batchEsc(b.at)}">${label}<button onclick="removeBatch('${q}','${item.id}',${i})" aria-label="Remove batch ${batchEsc(b.num)}">&times;</button></span>`;
+            }).join('');
+            const totalTxt = (hasBatchQty(item) ? ` &middot; <strong>${batchSum(item)}</strong> total` : '')
+                           + (hasBatchTime(item) ? ` &middot; <strong>${fmtTime(batchSecs(item))}</strong> time` : '');
+            const size = (item.batchSize !== null && item.batchSize !== undefined) ? item.batchSize : '';
+            const tm = item.batchTime || '';
+            return `
+                <div class="batch-tally"><strong>${list.length}</strong> ${list.length === 1 ? 'batch' : 'batches'} run${totalTxt}</div>
+                <div class="batch-add">
+                    <input type="text" id="batchNum_${q}_${item.id}" value="${batchEsc(size)}" placeholder="Qty per batch" aria-label="Quantity made in each batch"
+                        onkeydown="if(event.key==='Enter')addBatch('${q}','${item.id}')" />
+                    <input type="text" class="batch-time" id="batchTime_${q}_${item.id}" value="${batchEsc(tm)}" placeholder="H:MM:SS" aria-label="Time per batch"
+                        onkeydown="if(event.key==='Enter')addBatch('${q}','${item.id}')" />
+                    <button class="btn-apogee-green" onclick="addBatch('${q}','${item.id}')"><i class="fa-solid fa-plus"></i> Add batch</button>
+                </div>
+                ${chips ? `<div class="batch-chips">${chips}</div>
+                <button type="button" class="made-mode" style="margin-top:.4rem" onclick="clearBatches('${q}','${item.id}')">Clear batches</button>` : ''}`;
+        }
+
+        // Each click adds one batch. Quantity and time stay in their boxes (and are remembered),
+        // so clicking again adds another identical batch; type new values to change them.
+        function addBatch(q, id) {
+            const item = batchState(q).items.find(i => i.id === id);
+            if (!item) return;
+            item.batches = item.batches || [];
+            const input = document.getElementById(`batchNum_${q}_${id}`);
+            const tInput = document.getElementById(`batchTime_${q}_${id}`);
+            const raw = input ? input.value.trim() : '';
+            const tRaw = tInput ? tInput.value.trim() : '';
+            let qty = null, secs = null;
+            if (raw !== '') {
+                qty = Number(raw);
+                if (isNaN(qty)) { showToast('Enter a number for the batch quantity.'); return; }
+                item.batchSize = qty;
+            } else if (item.batchSize !== null && item.batchSize !== undefined) {
+                qty = item.batchSize;
+            }
+            if (tRaw !== '') {
+                secs = parseTime(tRaw);
+                if (isNaN(secs)) { showToast('Enter the time like 1:21:22 (h:mm:ss).'); return; }
+                item.batchTime = tRaw;
+            } else if (item.batchTime) {
+                secs = parseTime(item.batchTime);
+                if (isNaN(secs)) secs = null;
+            }
+            item.batches.push({ num: String(item.batches.length + 1), qty, secs, at: new Date().toLocaleString() });
+            syncMade(item);
+            batchSave(q);
+            batchRender(q);
+            playApogeeNote('G5');
+            const bits = [qty !== null ? '+' + qty : '', secs !== null ? '+' + fmtTime(secs) : ''].filter(Boolean).join(', ');
+            showToast(`Batch ${item.batches.length} ${bits ? '(' + bits + ') ' : ''}logged for ${item.code}.`);
+            const next = document.getElementById(`batchNum_${q}_${id}`);
+            if (next) { next.focus(); next.select(); }
+        }
+
+        function clearBatches(q, id) {
+            const item = batchState(q).items.find(i => i.id === id);
+            if (!item || !item.batches || !item.batches.length) return;
+            if (!confirm(`Clear all ${item.batches.length} batches for ${item.code}?`)) return;
+            item.batches = [];
+            syncMade(item);
+            batchSave(q);
+            batchRender(q);
+            playApogeeNote('G4');
+            showToast(`Batches cleared for ${item.code}.`);
+        }
+
+        function removeBatch(q, id, idx) {
+            const item = batchState(q).items.find(i => i.id === id);
+            if (!item || !item.batches) return;
+            item.batches.splice(idx, 1);
+            syncMade(item);
+            batchSave(q);
+            batchRender(q);
+            playApogeeNote('A4');
+            showToast(`Batch removed from ${item.code}.`);
+        }
+
+        function updateBatchStats() {
+            const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
+            let allBatches = 0, allItems = 0, allQty = 0;
+            QUEUES.forEach(c => {
+                const st = Q[c.key];
+                if (!st) return;
+                const n = st.items.reduce((sum, i) => sum + (i.batches ? i.batches.length : 0), 0);
+                allBatches += n;
+                allItems += st.items.length;
+                allQty += st.pending || 0;
+                const s = qSuffix(c.key);
+                setTxt('statBatches' + s, n);
+                setTxt('qbBatches_' + c.key, `${n} ${n === 1 ? 'batch' : 'batches'}`);
+                setTxt('ovn_' + c.key, st.items.length);
+                const chip = document.getElementById('ov_' + c.key);
+                if (chip) chip.classList.toggle('has', st.items.length > 0);
+            });
+            setTxt('headerBatches', allBatches);
+            setTxt('ovTotalItems', allItems);
+            setTxt('ovTotalQty', allQty);
+        }
+
+        /* ----------------------------------------------------
+           CLEAR ALL PRODUCTION LISTS
+        ---------------------------------------------------- */
+        function clearAllQueues() {
+            const total = QUEUES.reduce((n, c) => n + (Q[c.key] ? Q[c.key].items.length : 0), 0);
+            if (total === 0) { showToast('All production lists are already empty.'); return; }
+            if (!confirm(`Clear ALL ${total} item(s) from every production list (${QUEUES.map(c => c.short).join(', ')})? This cannot be undone.`)) return;
+            QUEUES.forEach(c => {
+                Q[c.key].items = [];
+                saveQueue(c.key);
+                renderQueue(c.key);
+            });
+            playApogeeNote('G4');
+            showToast('All production lists cleared.');
+        }
+
+        /* ----------------------------------------------------
+           CHECKLIST
+        ---------------------------------------------------- */
+        let checklist = [];
+        let checkBase = {};
+        let checkTimer = null;
+
+        function loadChecklist() { renderChecklist(); }
+        function saveChecklist() { clearTimeout(checkTimer); checkTimer = setTimeout(pushChecklist, 250); }
+        function pushChecklist() {
+            clearTimeout(checkTimer); checkTimer = null;
+            const c = cloud();
+            if (!c) return 0;
+            let n = 0;
+            const ids = new Set(checklist.map(i => i.id));
+            const gone = Object.keys(checkBase).filter(id => !ids.has(id));
+            if (gone.length) { c.deleteChecks(gone); gone.forEach(id => delete checkBase[id]); n++; }
+            checklist.forEach(it => {
+                const now = clone(it), prev = checkBase[it.id];
+                if (!prev || stable(now) !== stable(prev)) { c.setCheck(now); checkBase[it.id] = now; n++; }
+            });
+            return n;
+        }
+        function applyCloudChecklist(list) {
+            if (checkTimer && pushChecklist() > 0) return;
+            list.sort((a, b) => (a.ord || 0) - (b.ord || 0));
+            if (stable(list) === stable(checklist)) return;
+            checklist = list;
+            checkBase = {};
+            list.forEach(i => checkBase[i.id] = clone(i));
+            renderChecklist();
+        }
+
+        function addChecklistItem() {
+            const input = document.getElementById('checklistInput');
+            const text = input.value.trim();
+            if (!text) { showToast('Type a checklist item first.'); return; }
+            checklist.push({ id: 'chk_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5), text, done: false, ord: Date.now() });
+            saveChecklist();
+            renderChecklist();
+            input.value = '';
+            input.focus();
+            playApogeeNote('C5');
+        }
+
+        function toggleChecklistItem(id) {
+            const item = checklist.find(i => i.id === id);
+            if (!item) return;
+            item.done = !item.done;
+            saveChecklist();
+            renderChecklist();
+            if (item.done) playApogeeNote('C6');
+        }
+
+        function deleteChecklistItem(id) {
+            checklist = checklist.filter(i => i.id !== id);
+            saveChecklist();
+            renderChecklist();
+            playApogeeNote('A4');
+            showToast('Checklist item removed.');
+        }
+
+        function clearChecklist() {
+            if (checklist.length === 0) { showToast('The checklist is already empty.'); return; }
+            if (!confirm(`Clear all ${checklist.length} checklist item(s)?`)) return;
+            checklist = [];
+            saveChecklist();
+            renderChecklist();
+            playApogeeNote('G4');
+            showToast('Checklist cleared.');
+        }
+
+        function renderChecklist() {
+            const ul = document.getElementById('checklistItems');
+            if (!ul) return;
+            if (checklist.length === 0) {
+                ul.innerHTML = '<li class="p-4 text-xs text-slate-400 text-center font-sans">No checklist items yet.</li>';
+            } else {
+                ul.innerHTML = checklist.map(i => `
+                    <li class="priority-row flex items-center gap-3 px-4 py-2.5 ${i.done ? 'completed' : ''}">
+                        <input type="checkbox" ${i.done ? 'checked' : ''} onchange="toggleChecklistItem('${i.id}')"
+                            class="rounded border-slate-300 text-apogeeBlue cursor-pointer w-4 h-4" />
+                        <span class="priority-text flex-1 text-sm text-slate-800">${batchEsc(i.text)}</span>
+                        <button onclick="deleteChecklistItem('${i.id}')" class="text-slate-400 hover:text-apogeeRed transition p-1" aria-label="Delete item" title="Delete item">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </li>`).join('');
+            }
+            const done = checklist.filter(i => i.done).length;
+            const cnt = document.getElementById('checklistCount');
+            if (cnt) cnt.innerText = `${done} of ${checklist.length} done`;
+        }
+
+        // Initialize App on Page Load
+        window.addEventListener('DOMContentLoaded', () => {
+            buildQueues();
+            META.date = localDateStr();
+            QUEUES.forEach(c => { Q[c.key] = { items: [], pending: 0 }; renderQueue(c.key); });
+            initAddTarget();
+            renderCutGrid();
+            renderChecklist();
+            renderDateBanner();
+            setInterval(renderDateBanner, 60000);
+            startCloud();
+        });
+    </script>
+
+    <!-- FIREBASE / FIRESTORE SYNC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+        import { getFirestore, collection, doc, onSnapshot, setDoc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+        // >>> PASTE YOUR FIREBASE WEB APP CONFIG HERE (Firebase console > Project settings > Your apps) <<<
+        const firebaseConfig = {
+            apiKey: "PASTE_API_KEY",
+            authDomain: "PASTE_PROJECT_ID.firebaseapp.com",
+            projectId: "PASTE_PROJECT_ID",
+            storageBucket: "PASTE_PROJECT_ID.firebasestorage.app",
+            messagingSenderId: "PASTE_SENDER_ID",
+            appId: "PASTE_APP_ID"
+        };
+
+        window.hubConfigured = !firebaseConfig.apiKey.startsWith('PASTE');
+        if (window.hubConfigured) {
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+            const fail = e => { console.error('Firestore:', e); window.setSyncStatus('error', e.code || ''); };
+            const withIds = snap => snap.docs.map(d => Object.assign({}, d.data(), { id: d.id }));
+            const wipe = async (name, ids) => {
+                for (let i = 0; i < ids.length; i += 400) {
+                    const b = writeBatch(db);
+                    ids.slice(i, i + 400).forEach(id => b.delete(doc(db, name, id)));
+                    await b.commit();
+                }
+            };
+
+            window.hubCloud = {
+                start(h) {
+                    signInAnonymously(auth).then(() => {
+                        let everLive = false;
+                        onSnapshot(collection(db, 'items'), { includeMetadataChanges: true }, snap => {
+                            if (!snap.metadata.fromCache) everLive = true;
+                            h.status(snap.metadata.fromCache ? (everLive ? 'offline' : 'connecting') : (snap.metadata.hasPendingWrites ? 'saving' : 'live'));
+                            h.items(withIds(snap));
+                        }, fail);
+                        onSnapshot(doc(db, 'hub', 'meta'), s => h.meta(s.exists() ? s.data() : {}), fail);
+                        onSnapshot(collection(db, 'checklist'), snap => h.checklist(withIds(snap)), fail);
+                    }).catch(fail);
+                },
+                setItem: it => setDoc(doc(db, 'items', it.id), it).catch(fail),
+                patchItem: (id, fields) => updateDoc(doc(db, 'items', id), fields).catch(e => console.warn('patch skipped', id, e.code)),
+                deleteItems: ids => wipe('items', ids).catch(fail),
+                setMeta: m => setDoc(doc(db, 'hub', 'meta'), m, { merge: true }).catch(fail),
+                setCheck: it => setDoc(doc(db, 'checklist', it.id), it).catch(fail),
+                deleteChecks: ids => wipe('checklist', ids).catch(fail)
+            };
+        }
+    </script>
+</body>
+</html>
