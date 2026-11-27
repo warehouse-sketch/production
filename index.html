@@ -306,6 +306,17 @@
             </div>
         </section>
 
+        <!-- SHARED INITIALS LIST -->
+        <details class="apogee-card p-4 mb-6">
+            <summary class="cursor-pointer font-bold font-heading text-slate-700 uppercase text-sm"><i class="fa-solid fa-user-pen text-apogeeBlue mr-1"></i> Edit the initials dropdown (shared with everyone)</summary>
+            <div class="mt-3 flex flex-wrap gap-2 items-center">
+                <input type="text" id="newInitials" maxlength="10" placeholder="e.g. TB" onkeydown="if(event.key==='Enter')addInitials()"
+                    class="bg-white border border-slate-300 rounded px-3 py-1.5 font-mono text-sm focus:border-apogeeBlue focus:outline-none" />
+                <button onclick="addInitials()" class="bg-apogeeBlue text-white font-bold text-sm px-4 py-1.5 rounded">Add</button>
+            </div>
+            <div id="initialsChips" class="mt-3 flex flex-wrap gap-2"></div>
+        </details>
+
         <!-- LISTS OVERVIEW + COPY EVERYTHING (rendered by JS) -->
         <div id="listsOverview"></div>
 
@@ -528,7 +539,7 @@
         function renderQueueSafe(k) {
             const tb = document.getElementById('priorityTableBody' + qSuffix(k));
             const a = document.activeElement;
-            if (tb && a && a.tagName === 'INPUT' && tb.contains(a)) { deferRender[k] = true; return; }
+            if (tb && a && (a.tagName === 'INPUT' || a.tagName === 'SELECT') && tb.contains(a)) { deferRender[k] = true; return; }
             deferRender[k] = false;
             renderQueue(k);
         }
@@ -587,7 +598,7 @@
             set('dhLoaded', META.loadedAt ? 'List pasted at ' + new Date(META.loadedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '');
         }
         const SYNC_TEXT = {
-            live: ['sync-live', 'Online...'], saving: ['sync-wait', 'Saving...'], connecting: ['sync-wait', 'Connecting...'],
+            live: ['sync-live', 'Live - synced for everyone'], saving: ['sync-wait', 'Saving...'], connecting: ['sync-wait', 'Connecting...'],
             offline: ['sync-bad', 'Offline - changes sync when you reconnect'], error: ['sync-bad', 'Sync problem'],
             unconfigured: ['sync-bad', 'Not connected - changes are NOT saved'], nocloud: ['sync-bad', 'Could not load Firebase - changes are NOT saved']
         };
@@ -601,7 +612,7 @@
         function startCloud() {
             const c = cloud();
             if (!c) { setSyncStatus(window.hubConfigured === false ? 'unconfigured' : 'nocloud'); return; }
-            c.start({ items: applyCloudItems, meta: applyCloudMeta, checklist: applyCloudChecklist, status: setSyncStatus });
+            c.start({ initials: applyCloudInitials, items: applyCloudItems, meta: applyCloudMeta, checklist: applyCloudChecklist, status: setSyncStatus });
         }
 
         // Destination list for the shared paste box + manual entry (remembered between visits)
@@ -630,6 +641,51 @@
             chip.classList.remove('flash');
             void chip.offsetWidth;
             chip.classList.add('flash');
+        }
+
+        /* ---------- Shared initials dropdown (Firestore doc hub/initials) ---------- */
+        let INITIALS = [];
+        function initialsSelectHtml(item, key) {
+            const cur = item.initials || '';
+            const list = (cur && !INITIALS.includes(cur)) ? INITIALS.concat([cur]) : INITIALS;   // keep older typed values visible
+            const opts = list.map(v => `<option value="${batchEsc(v)}"${v === cur ? ' selected' : ''}>${batchEsc(v)}</option>`).join('');
+            return `<select aria-label="Initials" onchange="updateField('${key}','${item.id}','initials',this.value)"
+                class="w-full text-center font-mono text-sm font-bold px-1 py-1 bg-white border border-slate-300 rounded focus:border-apogeeBlue focus:outline-none">
+                <option value=""${cur ? '' : ' selected'}>Initials</option>${opts}</select>`;
+        }
+        function renderInitialsEditor() {
+            const box = document.getElementById('initialsChips');
+            if (!box) return;
+            box.innerHTML = INITIALS.length ? INITIALS.map((v, i) => `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-300 font-mono text-sm font-bold">${batchEsc(v)}
+                <button onclick="removeInitials(${i})" aria-label="Remove ${batchEsc(v)}" class="text-apogeeRed font-bold">&times;</button></span>`).join('')
+                : '<span class="text-sm text-slate-500">No initials yet. Add some above.</span>';
+        }
+        function saveInitials() {
+            INITIALS.sort((a, b) => a.localeCompare(b));
+            renderInitialsEditor();
+            QUEUES.forEach(c => renderQueueSafe(c.key));
+            const c = cloud(); if (c) c.setInitials(INITIALS);
+        }
+        function addInitials() {
+            const inp = document.getElementById('newInitials');
+            const v = inp.value.trim();
+            if (!v) return;
+            if (INITIALS.includes(v)) { showToast(v + ' is already on the list.'); return; }
+            INITIALS.push(v);
+            inp.value = '';
+            saveInitials();
+            showToast('Added ' + v + ' for everyone.');
+        }
+        function removeInitials(i) {
+            INITIALS.splice(i, 1);
+            saveInitials();
+        }
+        function applyCloudInitials(list) {
+            list = Array.isArray(list) ? list : [];
+            if (stable(list) === stable(INITIALS)) return;
+            INITIALS = list;
+            renderInitialsEditor();
+            QUEUES.forEach(c => renderQueueSafe(c.key));
         }
 
         // Which list each section of the Priority Build Report feeds. Edit here to re-route.
@@ -816,17 +872,7 @@
                     </td>
                     <td class="p-3 text-center">${timeCellHtml(item, key)}</td>
                     <td class="p-3 batch-cell">${batchCellHtml(item, key)}</td>
-                    <td class="p-3 text-center">
-                        <input
-                            type="text"
-                            maxlength="10"
-                            value="${batchEsc(item.initials || '')}"
-                            placeholder="Initials"
-                            aria-label="Your initials"
-                            oninput="updateField('${key}','${item.id}','initials',this.value)"
-                            class="w-full text-center font-mono text-sm font-bold px-1.5 py-1 bg-white border border-slate-300 rounded focus:border-apogeeBlue focus:outline-none"
-                        />
-                    </td>
+                    <td class="p-3 text-center">${initialsSelectHtml(item, key)}</td>
                     <td class="p-3 text-center">
                         <button onclick="deleteItem('${key}','${item.id}')" class="text-slate-400 hover:text-apogeeRed transition p-1">
                             <i class="fa-solid fa-trash"></i>
@@ -1726,6 +1772,7 @@
             initAddTarget();
             renderCutGrid();
             renderChecklist();
+            renderInitialsEditor();
             renderDateBanner();
             setInterval(renderDateBanner, 60000);
             startCloud();
@@ -1740,12 +1787,12 @@
 
         // >>> PASTE YOUR FIREBASE WEB APP CONFIG HERE (Firebase console > Project settings > Your apps) <<<
         const firebaseConfig = {
-         apiKey: "AIzaSyC7aQRMQCq23CbOLwjs7PAIL6k1HFgNf44",
-         authDomain: "apogee-6ca44.firebaseapp.com",
-         projectId: "apogee-6ca44",
-         storageBucket: "apogee-6ca44.firebasestorage.app",
-         messagingSenderId: "8561127518",
-         appId: "1:8561127518:web:2f802a13ed6eebde5c84cf"
+  apiKey: "AIzaSyC7aQRMQCq23CbOLwjs7PAIL6k1HFgNf44",
+  authDomain: "apogee-6ca44.firebaseapp.com",
+  projectId: "apogee-6ca44",
+  storageBucket: "apogee-6ca44.firebasestorage.app",
+  messagingSenderId: "8561127518",
+  appId: "1:8561127518:web:2f802a13ed6eebde5c84cf"
         };
 
         window.hubConfigured = !firebaseConfig.apiKey.startsWith('PASTE');
@@ -1773,12 +1820,14 @@
                             h.items(withIds(snap));
                         }, fail);
                         onSnapshot(doc(db, 'hub', 'meta'), s => h.meta(s.exists() ? s.data() : {}), fail);
+                        onSnapshot(doc(db, 'hub', 'initials'), s => h.initials(s.exists() ? s.data().list : []), fail);
                         onSnapshot(collection(db, 'checklist'), snap => h.checklist(withIds(snap)), fail);
                     }).catch(fail);
                 },
                 setItem: it => setDoc(doc(db, 'items', it.id), it).catch(fail),
                 patchItem: (id, fields) => updateDoc(doc(db, 'items', id), fields).catch(e => console.warn('patch skipped', id, e.code)),
                 deleteItems: ids => wipe('items', ids).catch(fail),
+                setInitials: list => setDoc(doc(db, 'hub', 'initials'), { list }).catch(fail),
                 setMeta: m => setDoc(doc(db, 'hub', 'meta'), m, { merge: true }).catch(fail),
                 setCheck: it => setDoc(doc(db, 'checklist', it.id), it).catch(fail),
                 deleteChecks: ids => wipe('checklist', ids).catch(fail)
